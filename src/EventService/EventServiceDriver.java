@@ -1,25 +1,22 @@
 package EventService;
 
+import Concurrency.ServiceList;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 
 import java.net.InetAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.*;
 
 /**
  * EventServiceDriver class for starting the Event Service.
  */
 public class EventServiceDriver {
-    static final String appType = "application/json";
+    static final String APP_TYPE = "application/json";
+    static boolean alive = true;
     static EventList eventList;
     static Map<String, String> properties;
-    static List<String> eventServiceList;
-    static String primaryEvent;
-    static List<String> userServiceList;
-    static String primaryUser;
+    static ServiceList<String> eventServiceList;
+    static ServiceList<String> userServiceList;
 
     /**
      * main method to start the server.
@@ -29,26 +26,15 @@ public class EventServiceDriver {
     public static void main(String[] args) {
         EventServiceDriver.eventList = new EventList();
         EventServiceDriver.properties = new HashMap<>();
-        EventServiceDriver.eventServiceList = new ArrayList<>();
-        EventServiceDriver.userServiceList = new ArrayList<>();
+        EventServiceDriver.eventServiceList = new ServiceList<>();
+        EventServiceDriver.userServiceList = new ServiceList<>();
 
         try {
             EventServiceDriver.initProperties(args);
-
-            int port = Integer.parseInt(EventServiceDriver.properties.get("port"));
-            Server server = new Server(port);
-            ServletHandler servHandler = new ServletHandler();
-
-            servHandler.addServletWithMapping(CreateServlet.class, "/create");
-            servHandler.addServletWithMapping(ListServlet.class, "/list");
-            servHandler.addServletWithMapping(EventServlet.class, "/*");
-            servHandler.addServletWithMapping(PurchaseServlet.class, "/purchase/*");
-            server.setHandler(servHandler);
-
-            server.start();
-            server.join();
+            EventServiceDriver.startServer();
         }
         catch (Exception ex) {
+            EventServiceDriver.alive = false;
             System.err.println(ex);
             System.exit(-1);
         }
@@ -65,19 +51,23 @@ public class EventServiceDriver {
         for (int i = 0; i < args.length - 1; i++) {
             if (args[i].equals("-port")) {
                 EventServiceDriver.properties.put("port", args[i + 1]);
+                EventServiceDriver.eventServiceList.addService(
+                        currentHost + ":" + EventServiceDriver.properties.get("port"));
                 port = true;
             }
             else if (args[i].equals("-primaryEvent")) {
                 if (args[i + 1].equals("this")) {
-                    EventServiceDriver.primaryEvent = currentHost + ":" + EventServiceDriver.properties.get("port");
+                    EventServiceDriver.eventServiceList.setPrimary(
+                            currentHost + ":" + EventServiceDriver.properties.get("port"));
                 }
                 else {
-                    EventServiceDriver.primaryEvent = args[i + 1];
+                    EventServiceDriver.eventServiceList.setPrimary(args[i + 1]);
+                    EventServiceDriver.eventServiceList.addService(args[i + 1]);
                 }
                 primaryE = true;
             }
             else if (args[i].equals("-primaryUser")) {
-                EventServiceDriver.primaryUser = args[i + 1];
+                EventServiceDriver.userServiceList.setPrimary(args[i + 1]);
                 primaryU = true;
             }
         }
@@ -85,5 +75,23 @@ public class EventServiceDriver {
         if (!port || !primaryE || !primaryU) {
             throw new Exception("Lack of parameter: port, primaryEvent, or primaryUser.");
         }
+    }
+
+    private static void startServer() throws Exception {
+        int port = Integer.parseInt(EventServiceDriver.properties.get("port"));
+        Server server = new Server(port);
+        ServletHandler servHandler = new ServletHandler();
+
+        servHandler.addServletWithMapping(CreateServlet.class, "/create");
+        servHandler.addServletWithMapping(ListServlet.class, "/list");
+        servHandler.addServletWithMapping(EventServlet.class, "/*");
+        servHandler.addServletWithMapping(PurchaseServlet.class, "/purchase/*");
+        server.setHandler(servHandler);
+
+        Thread gossipThread = new Thread(new Gossip());
+
+        server.start();
+        gossipThread.start();
+        server.join();
     }
 }

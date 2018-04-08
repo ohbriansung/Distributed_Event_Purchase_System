@@ -21,12 +21,12 @@ public class CreateServlet extends BaseServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("request: POST /create");
 
-        response.setContentType(EventServiceDriver.appType);
+        response.setContentType(EventServiceDriver.APP_TYPE);
         response.setStatus(400);
 
         try {
             String requestBody = parseRequest(request);
-            JsonObject body = parseJson(requestBody);
+            JsonObject body = (JsonObject) parseJson(requestBody);
 
             String eventName = body.get("eventname").getAsString();
             int createUserId = body.get("userid").getAsInt();

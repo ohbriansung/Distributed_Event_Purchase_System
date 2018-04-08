@@ -1,5 +1,6 @@
 package EventService;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonParseException;
@@ -22,13 +23,12 @@ public abstract class BaseServlet extends HttpServlet {
     /**
      * Initialize a new HttpURLConnection for particular service.
      *
-     * @param serviceType
-     * @param uri
+     * @param urlSring
      * @return HttpURLConnection
      * @throws IOException
      */
-    private HttpURLConnection initConnection(String serviceType, String uri) throws IOException {
-        URL url = new URL("http://" + EventServiceDriver.primaryEvent + uri);
+    private HttpURLConnection initConnection(String urlSring) throws IOException {
+        URL url = new URL("http://" + urlSring);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         return connection;
@@ -53,30 +53,43 @@ public abstract class BaseServlet extends HttpServlet {
     }
 
     /**
-     * Convert string into JsonObject.
+     * Convert string into JsonElement.
      *
      * @param body
-     * @return JsonObject
+     * @return JsonElement
      * @throws JsonParseException
      */
-    JsonObject parseJson(String body) throws JsonParseException {
+    JsonElement parseJson(String body) throws JsonParseException {
         JsonParser parser = new JsonParser();
-        return (JsonObject) parser.parse(body);
+        return parser.parse(body);
+    }
+
+    /**
+     * Send a GET request using HttpURLConnection.
+     *
+     * @param url
+     * @return HttpURLConnection
+     * @throws IOException
+     */
+    HttpURLConnection doGetRequest(String url) throws IOException {
+        HttpURLConnection connection = initConnection(url);
+        connection.setRequestMethod("GET");
+
+        return connection;
     }
 
     /**
      * Send a POST request using HttpURLConnection.
      *
-     * @param service
-     * @param uri
+     * @param url
      * @param body
      * @return HttpURLConnection
      * @throws IOException
      */
-    HttpURLConnection doPostRequest(String service, String uri, JsonObject body) throws IOException {
-        HttpURLConnection connection = initConnection(service, uri);
+    HttpURLConnection doPostRequest(String url, JsonObject body) throws IOException {
+        HttpURLConnection connection = initConnection(url);
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", EventServiceDriver.appType);
+        connection.setRequestProperty("Content-Type", EventServiceDriver.APP_TYPE);
         connection.setDoOutput(true);
 
         OutputStream os = connection.getOutputStream();
@@ -91,11 +104,11 @@ public abstract class BaseServlet extends HttpServlet {
      * Parse the response of HttpURLConnection into JSON format.
      *
      * @param connection
-     * @return JsonObject
+     * @return JsonElement
      * @throws JsonParseException
      * @throws IOException
      */
-    JsonObject parseResponse(HttpURLConnection connection) throws JsonParseException, IOException {
+    JsonElement parseResponse(HttpURLConnection connection) throws JsonParseException, IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder sb = new StringBuilder();
 

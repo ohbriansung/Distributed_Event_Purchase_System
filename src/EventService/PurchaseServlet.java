@@ -24,12 +24,12 @@ public class PurchaseServlet extends BaseServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("request: POST " + request.getRequestURI());
 
-        response.setContentType(EventServiceDriver.appType);
+        response.setContentType(EventServiceDriver.APP_TYPE);
         response.setStatus(400);
 
         try {
             String requestBody = parseRequest(request);
-            JsonObject body = parseJson(requestBody);
+            JsonObject body = (JsonObject) parseJson(requestBody);
 
             int eventIdURI = Integer.parseInt(request.getRequestURI().replaceFirst("/purchase/", ""));
             int eventId = body.get("eventid").getAsInt();
@@ -69,15 +69,15 @@ public class PurchaseServlet extends BaseServlet {
      * @return int
      */
     private int doPostUserTickets(int userId, int eventId, int tickets) {
-        String serviceType = "user";
-        String uri = "/" + userId + "/tickets/add";
+        String primaryUser = EventServiceDriver.userServiceList.getPrimary();
+        String url = primaryUser + "/" + userId + "/tickets/add";
         JsonObject body = new JsonObject();
         body.addProperty("eventid", eventId);
         body.addProperty("tickets", tickets);
 
         int responseCode;
         try {
-            HttpURLConnection connection = doPostRequest(serviceType, uri, body);
+            HttpURLConnection connection = doPostRequest(url, body);
             responseCode = connection.getResponseCode();
         }
         catch (IOException ignored) {

@@ -21,7 +21,7 @@ public class EventServlet extends BaseServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("request: GET " + request.getRequestURI());
 
-        response.setContentType(EventServiceDriver.appType);
+        response.setContentType(EventServiceDriver.APP_TYPE);
         response.setStatus(400);
 
         try {

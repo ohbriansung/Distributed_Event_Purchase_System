@@ -20,7 +20,7 @@ public class ListServlet extends BaseServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("request: GET /list");
 
-        response.setContentType(EventServiceDriver.appType);
+        response.setContentType(EventServiceDriver.APP_TYPE);
         response.setStatus(400);
 
         try {
