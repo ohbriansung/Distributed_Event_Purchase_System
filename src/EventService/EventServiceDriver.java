@@ -72,6 +72,14 @@ public class EventServiceDriver {
             }
         }
 
+        EventServiceDriver.properties.put("port", "4599");
+        EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
+        port = true;
+        EventServiceDriver.eventServiceList.setPrimary(
+                currentHost + ":" + EventServiceDriver.properties.get("port"));
+        primaryE = true;
+        primaryU = true;
+
         if (!port || !primaryE || !primaryU) {
             throw new Exception("Lack of parameter: port, primaryEvent, or primaryUser.");
         }
@@ -86,6 +94,7 @@ public class EventServiceDriver {
         servHandler.addServletWithMapping(ListServlet.class, "/list");
         servHandler.addServletWithMapping(EventServlet.class, "/*");
         servHandler.addServletWithMapping(PurchaseServlet.class, "/purchase/*");
+        servHandler.addServletWithMapping(GreetServlet.class, "/greet");
         server.setHandler(servHandler);
 
         Thread gossipThread = new Thread(new Gossip());

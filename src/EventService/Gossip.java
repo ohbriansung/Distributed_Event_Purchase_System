@@ -19,15 +19,16 @@ public class Gossip extends BaseServlet implements Runnable {
     public void run() {
         while (EventServiceDriver.alive) {
             List<String> services = EventServiceDriver.eventServiceList.getList();
+            String uri = "/greet?fromport=" + EventServiceDriver.properties.get("port");
 
             for (String url : services) {
                 if (isNotMe(url)) {
-                    this.executor.submit(new GreetAndUpdate(url));
+                    this.executor.submit(new GreetAndUpdate(url, uri));
                 }
             }
 
             try {
-                Thread.sleep(5000);
+                Thread.sleep(10000);
             }
             catch (InterruptedException ie) {
                 System.err.println(ie);
@@ -44,15 +45,17 @@ public class Gossip extends BaseServlet implements Runnable {
 
     private class GreetAndUpdate implements Runnable {
         private String url;
+        private String uri;
 
-        private GreetAndUpdate(String url) {
+        private GreetAndUpdate(String url, String uri) {
             this.url = url;
+            this.uri = uri;
         }
 
         @Override
         public void run() {
             try {
-                HttpURLConnection connection = doGetRequest(this.url + "/greet");
+                HttpURLConnection connection = doGetRequest(this.url + this.uri);
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     JsonArray responseBody = (JsonArray) parseResponse(connection);
