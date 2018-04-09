@@ -1,5 +1,6 @@
-package EventService;
+package EventService.Servlet;
 
+import EventService.EventServiceDriver;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -41,7 +42,7 @@ public abstract class BaseServlet extends HttpServlet {
      * @return String
      * @throws IOException
      */
-    String parseRequest(HttpServletRequest request) throws IOException {
+    public String parseRequest(HttpServletRequest request) throws IOException {
         BufferedReader reader = request.getReader();
         StringBuilder sb = new StringBuilder();
         String str;
@@ -59,7 +60,7 @@ public abstract class BaseServlet extends HttpServlet {
      * @return JsonElement
      * @throws JsonParseException
      */
-    JsonElement parseJson(String body) throws JsonParseException {
+    public JsonElement parseJson(String body) throws JsonParseException {
         JsonParser parser = new JsonParser();
         return parser.parse(body);
     }
@@ -71,7 +72,7 @@ public abstract class BaseServlet extends HttpServlet {
      * @return HttpURLConnection
      * @throws IOException
      */
-    HttpURLConnection doGetRequest(String url) throws IOException {
+    public HttpURLConnection doGetRequest(String url) throws IOException {
         HttpURLConnection connection = initConnection(url);
         connection.setRequestMethod("GET");
 
@@ -86,7 +87,7 @@ public abstract class BaseServlet extends HttpServlet {
      * @return HttpURLConnection
      * @throws IOException
      */
-    HttpURLConnection doPostRequest(String url, JsonObject body) throws IOException {
+    public HttpURLConnection doPostRequest(String url, JsonObject body) throws IOException {
         HttpURLConnection connection = initConnection(url);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", EventServiceDriver.APP_TYPE);
@@ -108,7 +109,7 @@ public abstract class BaseServlet extends HttpServlet {
      * @throws JsonParseException
      * @throws IOException
      */
-    JsonElement parseResponse(HttpURLConnection connection) throws JsonParseException, IOException {
+    public JsonElement parseResponse(HttpURLConnection connection) throws JsonParseException, IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder sb = new StringBuilder();
 

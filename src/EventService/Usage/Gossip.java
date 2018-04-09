@@ -1,5 +1,7 @@
-package EventService;
+package EventService.Usage;
 
+import EventService.Servlet.BaseServlet;
+import EventService.EventServiceDriver;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -11,7 +13,7 @@ import java.util.concurrent.Executors;
 public class Gossip extends BaseServlet implements Runnable {
     private ExecutorService executor;
 
-    Gossip() {
+    public Gossip() {
         this.executor = Executors.newFixedThreadPool(4);
     }
 

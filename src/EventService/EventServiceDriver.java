@@ -1,6 +1,9 @@
 package EventService;
 
 import Concurrency.ServiceList;
+import EventService.Concurrency.EventList;
+import EventService.Servlet.*;
+import EventService.Usage.Gossip;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 
@@ -11,12 +14,12 @@ import java.util.*;
  * EventServiceDriver class for starting the Event Service.
  */
 public class EventServiceDriver {
-    static final String APP_TYPE = "application/json";
-    static boolean alive = true;
-    static EventList eventList;
-    static Map<String, String> properties;
-    static ServiceList<String> eventServiceList;
-    static ServiceList<String> userServiceList;
+    public static final String APP_TYPE = "application/json";
+    public static boolean alive = true;
+    public static EventList eventList;
+    public static Map<String, String> properties;
+    public static ServiceList<String> eventServiceList;
+    public static ServiceList<String> userServiceList;
 
     /**
      * main method to start the server.
@@ -72,6 +75,7 @@ public class EventServiceDriver {
             }
         }
 
+        // TODO: delete before deploy
         EventServiceDriver.properties.put("port", "4599");
         EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
         port = true;
@@ -79,6 +83,7 @@ public class EventServiceDriver {
                 currentHost + ":" + EventServiceDriver.properties.get("port"));
         primaryE = true;
         primaryU = true;
+        // TODO: delete before deploy
 
         if (!port || !primaryE || !primaryU) {
             throw new Exception("Lack of parameter: port, primaryEvent, or primaryUser.");

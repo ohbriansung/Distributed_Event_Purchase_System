@@ -1,4 +1,6 @@
-package EventService;
+package EventService.Servlet;
+
+import EventService.EventServiceDriver;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

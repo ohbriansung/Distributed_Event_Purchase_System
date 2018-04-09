@@ -1,4 +1,4 @@
-package EventService;
+package EventService.Concurrency;
 
 import com.google.gson.JsonArray;
 

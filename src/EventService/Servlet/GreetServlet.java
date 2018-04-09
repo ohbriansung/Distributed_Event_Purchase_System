@@ -1,5 +1,6 @@
-package EventService;
+package EventService.Servlet;
 
+import EventService.EventServiceDriver;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
