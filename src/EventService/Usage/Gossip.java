@@ -2,6 +2,7 @@ package EventService.Usage;
 
 import EventService.Servlet.BaseServlet;
 import EventService.EventServiceDriver;
+import Usage.ServiceName;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -21,7 +22,7 @@ public class Gossip extends BaseServlet implements Runnable {
     public void run() {
         while (EventServiceDriver.alive) {
             List<String> services = EventServiceDriver.eventServiceList.getList();
-            String uri = "/greet?fromport=" + EventServiceDriver.properties.get("port");
+            String uri = "/greet";
 
             for (String url : services) {
                 if (isNotMe(url)) {
@@ -57,11 +58,13 @@ public class Gossip extends BaseServlet implements Runnable {
         @Override
         public void run() {
             try {
-                HttpURLConnection connection = doGetRequest(this.url + this.uri);
+                JsonObject requestBody = new JsonObject();
+                requestBody.addProperty("port", EventServiceDriver.properties.get("port"));
+                HttpURLConnection connection = doPostRequest(this.url + this.uri, requestBody);
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     JsonArray responseBody = (JsonArray) parseResponse(connection);
-                    updateEventServiceList(responseBody);
+                    updateServiceList(responseBody);
                 }
                 else {
                     wait(500); // wait for other threads to finish
@@ -71,12 +74,21 @@ public class Gossip extends BaseServlet implements Runnable {
             catch (Exception ignored) {}
         }
 
-        private void updateEventServiceList(JsonArray newList) {
+        private void updateServiceList(JsonArray newList) {
             for (int i = 0; i < newList.size(); i++) {
                 try {
                     JsonObject obj = (JsonObject) newList.get(i);
                     String service = obj.get("service").getAsString();
-                    EventServiceDriver.eventServiceList.addService(service);
+
+                    if (service.equals(ServiceName.FRONT_END.toString())) {
+                        EventServiceDriver.frontendServiceList.addService(obj.get("address").getAsString());
+                    }
+                    else if (service.equals(ServiceName.EVENT.toString())) {
+                        EventServiceDriver.eventServiceList.addService(obj.get("address").getAsString());
+                    }
+                    else if (service.equals(ServiceName.USER.toString())) {
+                        EventServiceDriver.userServiceList.addService(obj.get("address").getAsString());
+                    }
                 }
                 catch (Exception ignored) {}
             }

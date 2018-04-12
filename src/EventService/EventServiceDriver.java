@@ -1,6 +1,7 @@
 package EventService;
 
 import Concurrency.ServiceList;
+import Usage.ServiceName;
 import EventService.Concurrency.EventList;
 import EventService.Servlet.*;
 import EventService.Usage.Gossip;
@@ -18,6 +19,7 @@ public class EventServiceDriver {
     public static boolean alive = true;
     public static EventList eventList;
     public static Map<String, String> properties;
+    public static ServiceList<String> frontendServiceList;
     public static ServiceList<String> eventServiceList;
     public static ServiceList<String> userServiceList;
 
@@ -27,10 +29,7 @@ public class EventServiceDriver {
      * @param args
      */
     public static void main(String[] args) {
-        EventServiceDriver.eventList = new EventList();
-        EventServiceDriver.properties = new HashMap<>();
-        EventServiceDriver.eventServiceList = new ServiceList<>();
-        EventServiceDriver.userServiceList = new ServiceList<>();
+        initDataStructures();
 
         try {
             EventServiceDriver.initProperties(args);
@@ -41,6 +40,14 @@ public class EventServiceDriver {
             System.err.println(ex);
             System.exit(-1);
         }
+    }
+
+    private static void initDataStructures() {
+        EventServiceDriver.eventList = new EventList();
+        EventServiceDriver.properties = new HashMap<>();
+        EventServiceDriver.frontendServiceList = new ServiceList<>(ServiceName.FRONT_END.toString());
+        EventServiceDriver.eventServiceList = new ServiceList<>(ServiceName.EVENT.toString());
+        EventServiceDriver.userServiceList = new ServiceList<>(ServiceName.USER.toString());
     }
 
     private static void initProperties(String[] args) throws Exception {

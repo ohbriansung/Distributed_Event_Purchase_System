@@ -6,14 +6,15 @@ import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
 public class GreetServlet extends BaseServlet {
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("request: GET /greet");
+    public void doPost(HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("request: POST /greet");
 
         response.setContentType(EventServiceDriver.APP_TYPE);
         response.setStatus(400);
@@ -30,22 +31,19 @@ public class GreetServlet extends BaseServlet {
     }
 
     private JsonArray getServiceList() {
-        JsonArray array = new JsonArray();
-        List<String> list = EventServiceDriver.eventServiceList.getList();
-
-        for (String service : list) {
-            JsonObject obj = new JsonObject();
-            obj.addProperty("service", service);
-            array.add(obj);
-        }
+        JsonArray array = EventServiceDriver.frontendServiceList.getData();
+        array.addAll(EventServiceDriver.eventServiceList.getData());
+        array.addAll(EventServiceDriver.userServiceList.getData());
 
         return array;
     }
 
-    private void addSender(HttpServletRequest request) {
+    private void addSender(HttpServletRequest request) throws IOException {
+        String requestBody = parseRequest(request);
+        JsonObject body = (JsonObject) parseJson(requestBody);
+
         String host = request.getRemoteAddr();
-        String port = request.getParameter("fromport");
-        System.out.println("adding: " + host + ":" + port);
+        String port = body.get("port").getAsString();
         EventServiceDriver.eventServiceList.addService(host + ":" + port);
     }
 }
