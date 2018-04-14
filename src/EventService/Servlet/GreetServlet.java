@@ -15,8 +15,6 @@ public class GreetServlet extends BaseServlet {
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("request: POST /greet");
-
         response.setContentType(EventServiceDriver.APP_TYPE);
         response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 
@@ -37,6 +35,9 @@ public class GreetServlet extends BaseServlet {
 
         String host = request.getRemoteAddr();
         String port = body.get("port").getAsString();
+
+        System.out.println("[Servlet] POST request /greet from " + host + ":" + port);
+
         EventServiceDriver.eventServiceList.addService(host + ":" + port);
     }
 }

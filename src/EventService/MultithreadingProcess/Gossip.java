@@ -1,4 +1,4 @@
-package EventService.Usage;
+package EventService.MultithreadingProcess;
 
 import EventService.Servlet.BaseServlet;
 import EventService.EventServiceDriver;
@@ -11,8 +11,6 @@ import java.net.HttpURLConnection;
 import java.util.*;
 
 public class Gossip extends BaseServlet implements Runnable {
-
-    public Gossip() {}
 
     @Override
     public void run() {
@@ -41,9 +39,11 @@ public class Gossip extends BaseServlet implements Runnable {
                         System.out.println("[Gossip] Remove " + service + " from the list");
                         EventServiceDriver.eventServiceList.removeService(service);
 
+                        // start an election if removing primary
                         if (service.equals(EventServiceDriver.eventServiceList.getPrimary())) {
                             Thread election = new Thread(new BullyElection());
                             election.start();
+                            election.join();
                         }
                     }
                 }
@@ -75,7 +75,7 @@ public class Gossip extends BaseServlet implements Runnable {
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     JsonArray responseBody = (JsonArray) parseResponse(connection);
                     updateServiceList(responseBody);
-                    System.out.println("[Gossip] Updated: " + responseBody.toString());
+                    System.out.println("[Gossip] List updated: " + responseBody.toString());
                 }
                 else {
                     this.toRemove.add(this.url);

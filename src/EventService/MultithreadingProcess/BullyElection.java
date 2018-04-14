@@ -1,6 +1,5 @@
-package EventService.Usage;
+package EventService.MultithreadingProcess;
 
-import EventService.Concurrency.Event;
 import EventService.EventServiceDriver;
 import EventService.Servlet.BaseServlet;
 import Usage.State;
@@ -8,6 +7,7 @@ import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BullyElection extends BaseServlet implements Runnable {
@@ -28,20 +28,34 @@ public class BullyElection extends BaseServlet implements Runnable {
         }
         else {
             do {
+                List<Thread> currentTasts = new ArrayList<>();
+
                 for (int i = currentRank + 1; i < services.size(); i++) {
                     System.out.println("[Election] Sending election request to " + services.get(i));
                     Thread newTask = new Thread(new Election(services.get(i)));
+                    currentTasts.add(newTask);
                     newTask.start();
                 }
 
+                /*
+                After all finishing tasks, check if there is any reply.
+                If there is no reply, announce that a new primary has been elected.
+                If there are replies, wait for announcement from service with higher rank,
+                resend the election request when timeout and no announcement.
+                 */
                 try {
-                    Thread.sleep(3000);
+                    for (Thread task : currentTasts) {
+                        task.join();
+                    }
+
+                    if (!this.beenReplied) {
+                        announceNewPrimary();
+                    }
+                    else {
+                        Thread.sleep(3000);
+                    }
                 }
                 catch (InterruptedException ignored) {}
-
-                if (!this.beenReplied) {
-                    announceNewPrimary();
-                }
 
                 // if received reply and still in candidate state after timeout, retry the election
             } while (EventServiceDriver.state == State.CANDIDATE);
@@ -55,12 +69,14 @@ public class BullyElection extends BaseServlet implements Runnable {
         EventServiceDriver.state = State.PRIMARY;
         EventServiceDriver.eventServiceList.setPrimary(currentAddress);
 
-        // start announcing "I am new primary!"
+        // start announcing to all services that "I am the new primary!"
         List<String> services = EventServiceDriver.eventServiceList.getList();
+        services.addAll(EventServiceDriver.frontendServiceList.getList());
+        services.add(EventServiceDriver.primaryUserService);
 
         for (String url : services) {
             if (!url.equals(currentAddress)) {
-                System.out.println("[Election] Sending announce to " + url);
+                System.out.println("[Election] Sending announcement to " + url);
                 Thread newTask = new Thread(new Announce(url));
                 newTask.start();
             }
@@ -80,13 +96,16 @@ public class BullyElection extends BaseServlet implements Runnable {
                 HttpURLConnection connection = doGetRequest(this.url + "/election");
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    System.out.println("[Election] " + this.url + " has replied: there is a service with higher rank");
                     beenReplied = true;
                 }
                 else {
+                    System.out.println("[Election] Remove " + this.url + " from the list");
                     EventServiceDriver.eventServiceList.removeService(this.url);
                 }
             }
             catch (IOException ignored) {
+                System.out.println("[Election] Remove " + this.url + " from the list");
                 EventServiceDriver.eventServiceList.removeService(this.url);
             }
         }
@@ -107,10 +126,12 @@ public class BullyElection extends BaseServlet implements Runnable {
                 HttpURLConnection connection = doPostRequest(this.url + "/election", requestBody);
 
                 if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    System.out.println("[Election] Remove " + this.url + " from the list");
                     EventServiceDriver.eventServiceList.removeService(this.url);
                 }
             }
             catch (IOException ignored) {
+                System.out.println("[Election] Remove " + this.url + " from the list");
                 EventServiceDriver.eventServiceList.removeService(this.url);
             }
         }

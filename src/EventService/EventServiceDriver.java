@@ -1,11 +1,11 @@
 package EventService;
 
 import Concurrency.ServiceList;
-import EventService.Usage.GreetWithFrontEnd;
+import EventService.MultithreadingProcess.GreetWithFrontEnd;
 import Usage.ServiceName;
 import EventService.Concurrency.EventList;
 import EventService.Servlet.*;
-import EventService.Usage.Gossip;
+import EventService.MultithreadingProcess.Gossip;
 import Usage.State;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -90,11 +90,11 @@ public class EventServiceDriver {
         // TODO: delete before deploy
         EventServiceDriver.properties.put("port", "4599");
         EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
-        EventServiceDriver.eventServiceList.addService(currentHost + ":4598");
+        EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
         port = true;
-        EventServiceDriver.eventServiceList.setPrimary(currentHost + ":4598");
+        EventServiceDriver.eventServiceList.setPrimary(currentHost + ":4599");
         EventServiceDriver.state = State.PRIMARY;
-        EventServiceDriver.state = State.SECONDARY;
+        //EventServiceDriver.state = State.SECONDARY;
         primaryEvent = true;
         primaryUser = true;
         // TODO: delete before deploy
@@ -119,6 +119,9 @@ public class EventServiceDriver {
 
         Thread gossipThread = new Thread(new Gossip());
         Thread greetFrontEnd = new Thread(new GreetWithFrontEnd());
+
+        System.out.println("[System] Starting server on " + EventServiceDriver.properties.get("host") +
+                ":" + EventServiceDriver.properties.get("port"));
 
         server.start();
         gossipThread.start();

@@ -1,7 +1,7 @@
 package EventService.Servlet;
 
 import EventService.EventServiceDriver;
-import EventService.Usage.BullyElection;
+import EventService.MultithreadingProcess.BullyElection;
 import Usage.State;
 import com.google.gson.JsonObject;
 
@@ -14,7 +14,7 @@ public class ElectionServlet extends BaseServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("request: GET /election");
+        System.out.println("[Servlet] GET request /election");
 
         /*
         Only send the election request when current service hasn't sent one.
@@ -36,14 +36,16 @@ public class ElectionServlet extends BaseServlet {
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("request: POST /election");
-
         try {
             String requestBody = parseRequest(request);
             JsonObject body = (JsonObject) parseJson(requestBody);
 
             String host = request.getRemoteAddr();
             String port = body.get("port").getAsString();
+
+            System.out.println("[Servlet] POST request /election from " + host + ":" + port +
+                    " announcing there is a new primary");
+
             EventServiceDriver.eventServiceList.setPrimary(host + ":" + port);
             EventServiceDriver.state = State.SECONDARY;
         }

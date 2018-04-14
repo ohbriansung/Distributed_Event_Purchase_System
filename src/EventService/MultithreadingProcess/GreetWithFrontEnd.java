@@ -1,4 +1,4 @@
-package EventService.Usage;
+package EventService.MultithreadingProcess;
 
 import EventService.EventServiceDriver;
 import EventService.Servlet.BaseServlet;
@@ -8,8 +8,6 @@ import java.net.HttpURLConnection;
 import java.util.List;
 
 public class GreetWithFrontEnd extends BaseServlet implements Runnable {
-
-    public GreetWithFrontEnd() {}
 
     @Override
     public void run() {
