@@ -3,34 +3,44 @@ package EventService.Usage;
 import EventService.Servlet.BaseServlet;
 import EventService.EventServiceDriver;
 import Usage.ServiceName;
+import Usage.State;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.net.HttpURLConnection;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
 
 public class Gossip extends BaseServlet implements Runnable {
-    private ExecutorService executor;
 
-    public Gossip() {
-        this.executor = Executors.newFixedThreadPool(4);
-    }
+    public Gossip() {}
 
     @Override
     public void run() {
         while (EventServiceDriver.alive) {
-            List<String> services = EventServiceDriver.eventServiceList.getList();
-            String uri = "/greet";
-
-            for (String url : services) {
-                if (isNotMe(url)) {
-                    this.executor.submit(new GreetAndUpdate(url, uri));
-                }
-            }
-
             try {
+                if (EventServiceDriver.state != State.CANDIDATE) {
+                    List<Thread> currentTasks = new ArrayList<>();
+                    Vector<String> toRemove = new Vector<>();
+                    List<String> services = EventServiceDriver.eventServiceList.getList();
+
+                    for (String url : services) {
+                        if (isNotMe(url)) {
+                            Thread newTask = new Thread(new GreetAndUpdate(url, toRemove));
+                            currentTasks.add(newTask);
+                            newTask.start();
+                        }
+                    }
+
+                    for (Thread task : currentTasks) {
+                        task.join();
+                    }
+
+                    // remove after finishing all tasks
+                    for (String service : toRemove) {
+                        EventServiceDriver.eventServiceList.removeService(service);
+                    }
+                }
+
                 Thread.sleep(10000);
             }
             catch (InterruptedException ie) {
@@ -48,11 +58,11 @@ public class Gossip extends BaseServlet implements Runnable {
 
     private class GreetAndUpdate implements Runnable {
         private String url;
-        private String uri;
+        private Vector<String> toRemove;
 
-        private GreetAndUpdate(String url, String uri) {
+        private GreetAndUpdate(String url, Vector<String> toRemove) {
             this.url = url;
-            this.uri = uri;
+            this.toRemove = toRemove;
         }
 
         @Override
@@ -60,18 +70,21 @@ public class Gossip extends BaseServlet implements Runnable {
             try {
                 JsonObject requestBody = new JsonObject();
                 requestBody.addProperty("port", EventServiceDriver.properties.get("port"));
-                HttpURLConnection connection = doPostRequest(this.url + this.uri, requestBody);
+                HttpURLConnection connection = doPostRequest(this.url + "/greet", requestBody);
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     JsonArray responseBody = (JsonArray) parseResponse(connection);
                     updateServiceList(responseBody);
                 }
                 else {
-                    wait(500); // wait for other threads to finish
-                    EventServiceDriver.eventServiceList.removeService(this.url);
+                    this.toRemove.add(this.url);
                 }
             }
-            catch (Exception ignored) {}
+            catch (Exception ignored) {
+                if (!this.toRemove.contains(this.url)) {
+                    this.toRemove.add(this.url);
+                }
+            }
         }
 
         private void updateServiceList(JsonArray newList) {
@@ -85,9 +98,6 @@ public class Gossip extends BaseServlet implements Runnable {
                     }
                     else if (service.equals(ServiceName.EVENT.toString())) {
                         EventServiceDriver.eventServiceList.addService(obj.get("address").getAsString());
-                    }
-                    else if (service.equals(ServiceName.USER.toString())) {
-                        EventServiceDriver.userServiceList.addService(obj.get("address").getAsString());
                     }
                 }
                 catch (Exception ignored) {}

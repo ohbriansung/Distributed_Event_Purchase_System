@@ -1,10 +1,12 @@
 package EventService;
 
 import Concurrency.ServiceList;
+import EventService.Usage.GreetWithFrontEnd;
 import Usage.ServiceName;
 import EventService.Concurrency.EventList;
 import EventService.Servlet.*;
 import EventService.Usage.Gossip;
+import Usage.State;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 
@@ -17,11 +19,13 @@ import java.util.*;
 public class EventServiceDriver {
     public static final String APP_TYPE = "application/json";
     public static boolean alive = true;
+    public static State state;
     public static EventList eventList;
     public static Map<String, String> properties;
+
     public static ServiceList<String> frontendServiceList;
     public static ServiceList<String> eventServiceList;
-    public static ServiceList<String> userServiceList;
+    public static volatile String primaryUserService;
 
     /**
      * main method to start the server.
@@ -47,13 +51,12 @@ public class EventServiceDriver {
         EventServiceDriver.properties = new HashMap<>();
         EventServiceDriver.frontendServiceList = new ServiceList<>(ServiceName.FRONT_END.toString());
         EventServiceDriver.eventServiceList = new ServiceList<>(ServiceName.EVENT.toString());
-        EventServiceDriver.userServiceList = new ServiceList<>(ServiceName.USER.toString());
     }
 
     private static void initProperties(String[] args) throws Exception {
         boolean port = false;
-        boolean primaryE = false;
-        boolean primaryU = false;
+        boolean primaryEvent = false;
+        boolean primaryUser = false;
 
         String currentHost =  InetAddress.getLocalHost().getHostAddress();
         EventServiceDriver.properties.put("host", currentHost);
@@ -69,16 +72,18 @@ public class EventServiceDriver {
                 if (args[i + 1].equals("this")) {
                     EventServiceDriver.eventServiceList.setPrimary(
                             currentHost + ":" + EventServiceDriver.properties.get("port"));
+                    EventServiceDriver.state = State.LEADER;
                 }
                 else {
                     EventServiceDriver.eventServiceList.setPrimary(args[i + 1]);
                     EventServiceDriver.eventServiceList.addService(args[i + 1]);
+                    EventServiceDriver.state = State.FOLLOWER;
                 }
-                primaryE = true;
+                primaryEvent = true;
             }
-            else if (args[i].equals("-primaryUser")) {
-                EventServiceDriver.userServiceList.setPrimary(args[i + 1]);
-                primaryU = true;
+            else if (args[i].equals("-primaryEvent")) {
+                EventServiceDriver.primaryUserService = args[i + 1];
+                primaryUser = true;
             }
         }
 
@@ -88,11 +93,11 @@ public class EventServiceDriver {
         port = true;
         EventServiceDriver.eventServiceList.setPrimary(
                 currentHost + ":" + EventServiceDriver.properties.get("port"));
-        primaryE = true;
-        primaryU = true;
+        primaryEvent = true;
+        primaryUser = true;
         // TODO: delete before deploy
 
-        if (!port || !primaryE || !primaryU) {
+        if (!port || !primaryEvent || !primaryUser) {
             throw new Exception("Lack of parameter: port, primaryEvent, or primaryUser.");
         }
     }
@@ -110,9 +115,11 @@ public class EventServiceDriver {
         server.setHandler(servHandler);
 
         Thread gossipThread = new Thread(new Gossip());
+        Thread greetFrontEnd = new Thread(new GreetWithFrontEnd());
 
         server.start();
         gossipThread.start();
+        greetFrontEnd.start();
         server.join();
     }
 }

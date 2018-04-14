@@ -30,14 +30,6 @@ public class GreetServlet extends BaseServlet {
         catch (Exception ignored) {}
     }
 
-    private JsonArray getServiceList() {
-        JsonArray array = EventServiceDriver.frontendServiceList.getData();
-        array.addAll(EventServiceDriver.eventServiceList.getData());
-        array.addAll(EventServiceDriver.userServiceList.getData());
-
-        return array;
-    }
-
     private void addSender(HttpServletRequest request) throws IOException {
         String requestBody = parseRequest(request);
         JsonObject body = (JsonObject) parseJson(requestBody);

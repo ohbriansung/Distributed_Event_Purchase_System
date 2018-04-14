@@ -1,10 +1,7 @@
 package EventService.Servlet;
 
 import EventService.EventServiceDriver;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonParseException;
+import com.google.gson.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +28,7 @@ public abstract class BaseServlet extends HttpServlet {
     private HttpURLConnection initConnection(String urlSring) throws IOException {
         URL url = new URL("http://" + urlSring);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setConnectTimeout(5000);
 
         return connection;
     }
@@ -120,5 +118,12 @@ public abstract class BaseServlet extends HttpServlet {
         in.close();
 
         return parseJson(sb.toString());
+    }
+
+    public JsonArray getServiceList() {
+        JsonArray array = EventServiceDriver.frontendServiceList.getData();
+        array.addAll(EventServiceDriver.eventServiceList.getData());
+
+        return array;
     }
 }
