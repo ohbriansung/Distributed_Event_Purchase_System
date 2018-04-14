@@ -2,8 +2,8 @@ package Usage;
 
 public enum State {
 
-    LEADER("leader"),
-    FOLLOWER("follower"),
+    PRIMARY("primary"),
+    SECONDARY("secondary"),
     CANDIDATE("candidate");
 
     private final String message;

@@ -24,7 +24,8 @@ public class Gossip extends BaseServlet implements Runnable {
                     List<String> services = EventServiceDriver.eventServiceList.getList();
 
                     for (String url : services) {
-                        if (isNotMe(url)) {
+                        if (!url.equals(getCurrentAddress())) {
+                            System.out.println("[Gossip] Start gossip with " + url);
                             Thread newTask = new Thread(new GreetAndUpdate(url, toRemove));
                             currentTasks.add(newTask);
                             newTask.start();
@@ -37,7 +38,13 @@ public class Gossip extends BaseServlet implements Runnable {
 
                     // remove after finishing all tasks
                     for (String service : toRemove) {
+                        System.out.println("[Gossip] Remove " + service + " from the list");
                         EventServiceDriver.eventServiceList.removeService(service);
+
+                        if (service.equals(EventServiceDriver.eventServiceList.getPrimary())) {
+                            Thread election = new Thread(new BullyElection());
+                            election.start();
+                        }
                     }
                 }
 
@@ -47,13 +54,6 @@ public class Gossip extends BaseServlet implements Runnable {
                 System.err.println(ie);
             }
         }
-    }
-
-    private boolean isNotMe(String url) {
-        String myUrl = EventServiceDriver.properties.get("host") +
-                ":" + EventServiceDriver.properties.get("port");
-
-        return !myUrl.equals(url);
     }
 
     private class GreetAndUpdate implements Runnable {
@@ -75,6 +75,7 @@ public class Gossip extends BaseServlet implements Runnable {
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     JsonArray responseBody = (JsonArray) parseResponse(connection);
                     updateServiceList(responseBody);
+                    System.out.println("[Gossip] Updated: " + responseBody.toString());
                 }
                 else {
                     this.toRemove.add(this.url);

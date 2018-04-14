@@ -27,7 +27,7 @@ public class PurchaseServlet extends BaseServlet {
         System.out.println("request: POST " + request.getRequestURI());
 
         response.setContentType(EventServiceDriver.APP_TYPE);
-        response.setStatus(400);
+        response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 
         try {
             String requestBody = parseRequest(request);
@@ -48,7 +48,7 @@ public class PurchaseServlet extends BaseServlet {
                         int responseCode = doPostUserTickets(userId, eventId, tickets);
 
                         if (responseCode == HttpURLConnection.HTTP_OK) {
-                            response.setStatus(200);
+                            response.setStatus(responseCode);
                         }
                         else { // rollback
                             tickets *= -1;
@@ -71,7 +71,7 @@ public class PurchaseServlet extends BaseServlet {
      * @return int
      */
     private int doPostUserTickets(int userId, int eventId, int tickets) {
-        String primaryUser = EventServiceDriver.userServiceList.getPrimary();
+        String primaryUser = EventServiceDriver.primaryUserService;
         String url = primaryUser + "/" + userId + "/tickets/add";
         JsonObject body = new JsonObject();
         body.addProperty("eventid", eventId);

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.util.List;
 
 public class GreetServlet extends BaseServlet {
@@ -17,14 +18,14 @@ public class GreetServlet extends BaseServlet {
         System.out.println("request: POST /greet");
 
         response.setContentType(EventServiceDriver.APP_TYPE);
-        response.setStatus(400);
+        response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 
         try {
             PrintWriter pw = response.getWriter();
             JsonArray responseBody = getServiceList();
             addSender(request);
 
-            response.setStatus(200);
+            response.setStatus(HttpURLConnection.HTTP_OK);
             pw.println(responseBody.toString());
         }
         catch (Exception ignored) {}

@@ -19,13 +19,13 @@ import java.util.*;
 public class EventServiceDriver {
     public static final String APP_TYPE = "application/json";
     public static boolean alive = true;
-    public static State state;
     public static EventList eventList;
     public static Map<String, String> properties;
 
     public static ServiceList<String> frontendServiceList;
     public static ServiceList<String> eventServiceList;
     public static volatile String primaryUserService;
+    public static volatile State state;
 
     /**
      * main method to start the server.
@@ -72,12 +72,12 @@ public class EventServiceDriver {
                 if (args[i + 1].equals("this")) {
                     EventServiceDriver.eventServiceList.setPrimary(
                             currentHost + ":" + EventServiceDriver.properties.get("port"));
-                    EventServiceDriver.state = State.LEADER;
+                    EventServiceDriver.state = State.PRIMARY;
                 }
                 else {
                     EventServiceDriver.eventServiceList.setPrimary(args[i + 1]);
                     EventServiceDriver.eventServiceList.addService(args[i + 1]);
-                    EventServiceDriver.state = State.FOLLOWER;
+                    EventServiceDriver.state = State.SECONDARY;
                 }
                 primaryEvent = true;
             }
@@ -90,9 +90,11 @@ public class EventServiceDriver {
         // TODO: delete before deploy
         EventServiceDriver.properties.put("port", "4599");
         EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
+        EventServiceDriver.eventServiceList.addService(currentHost + ":4598");
         port = true;
-        EventServiceDriver.eventServiceList.setPrimary(
-                currentHost + ":" + EventServiceDriver.properties.get("port"));
+        EventServiceDriver.eventServiceList.setPrimary(currentHost + ":4598");
+        EventServiceDriver.state = State.PRIMARY;
+        EventServiceDriver.state = State.SECONDARY;
         primaryEvent = true;
         primaryUser = true;
         // TODO: delete before deploy
@@ -112,6 +114,7 @@ public class EventServiceDriver {
         servHandler.addServletWithMapping(EventServlet.class, "/*");
         servHandler.addServletWithMapping(PurchaseServlet.class, "/purchase/*");
         servHandler.addServletWithMapping(GreetServlet.class, "/greet");
+        servHandler.addServletWithMapping(ElectionServlet.class, "/election");
         server.setHandler(servHandler);
 
         Thread gossipThread = new Thread(new Gossip());

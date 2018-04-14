@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 
 /**
  * CreateServlet class to handle request creating event.
@@ -23,7 +24,7 @@ public class CreateServlet extends BaseServlet {
         System.out.println("request: POST /create");
 
         response.setContentType(EventServiceDriver.APP_TYPE);
-        response.setStatus(400);
+        response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 
         try {
             String requestBody = parseRequest(request);
@@ -38,7 +39,7 @@ public class CreateServlet extends BaseServlet {
                 PrintWriter pw = response.getWriter();
                 JsonObject responseBody = getJSONResponse(eventId);
 
-                response.setStatus(200);
+                response.setStatus(HttpURLConnection.HTTP_OK);
                 pw.println(responseBody.toString());
             }
         }

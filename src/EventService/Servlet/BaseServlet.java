@@ -120,6 +120,11 @@ public abstract class BaseServlet extends HttpServlet {
         return parseJson(sb.toString());
     }
 
+    public String getCurrentAddress() {
+        return EventServiceDriver.properties.get("host") +
+                ":" + EventServiceDriver.properties.get("port");
+    }
+
     public JsonArray getServiceList() {
         JsonArray array = EventServiceDriver.frontendServiceList.getData();
         array.addAll(EventServiceDriver.eventServiceList.getData());

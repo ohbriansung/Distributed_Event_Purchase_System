@@ -77,6 +77,7 @@ public class ServiceList<T> {
             JsonObject obj = new JsonObject();
             obj.addProperty("service", this.service);
             obj.addProperty("address", (String) address);
+            obj.addProperty("primary", address.equals(this.primary));
             array.add(obj);
         }
         this.lock.readLock().unlock();
