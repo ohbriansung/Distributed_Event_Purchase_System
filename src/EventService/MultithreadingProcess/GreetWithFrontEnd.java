@@ -16,13 +16,14 @@ public class GreetWithFrontEnd extends BaseServlet implements Runnable {
                 List<String> services = EventServiceDriver.frontendServiceList.getList();
 
                 for (String url : services) {
+                    System.out.println("[Greet] Greet with frontend on " + url);
                     greetAndUpdate(url);
                 }
 
                 Thread.sleep(10000);
             }
             catch (InterruptedException ie) {
-                System.err.println(ie);
+                ie.printStackTrace();
             }
         }
     }
@@ -32,10 +33,12 @@ public class GreetWithFrontEnd extends BaseServlet implements Runnable {
             HttpURLConnection connection = doGetRequest(url + "/greet");
 
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                System.out.println("[Greet] Remove frontend on " + url);
                 EventServiceDriver.frontendServiceList.removeService(url);
             }
         }
         catch (IOException ignored) {
+            System.out.println("[Greet] Remove frontend on " + url);
             EventServiceDriver.frontendServiceList.removeService(url);
         }
     }

@@ -1,6 +1,6 @@
 package EventService.Servlet;
 
-import EventService.Concurrency.Event;
+import EventService.EventConcurrency.Event;
 import EventService.EventServiceDriver;
 import com.google.gson.JsonObject;
 

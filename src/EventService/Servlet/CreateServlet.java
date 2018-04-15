@@ -1,12 +1,15 @@
 package EventService.Servlet;
 
 import EventService.EventServiceDriver;
+import Usage.State;
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CreateServlet class to handle request creating event.
@@ -21,7 +24,7 @@ public class CreateServlet extends BaseServlet {
      */
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("request: POST /create");
+        System.out.println("[Servlet] POST request /create");
 
         response.setContentType(EventServiceDriver.APP_TYPE);
         response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
@@ -30,12 +33,24 @@ public class CreateServlet extends BaseServlet {
             String requestBody = parseRequest(request);
             JsonObject body = (JsonObject) parseJson(requestBody);
 
+            timestampBlock(body);
+
+            String uuid = body.get("uuid").getAsString();
             String eventName = body.get("eventname").getAsString();
             int createUserId = body.get("userid").getAsInt();
             int numtickets = body.get("numtickets").getAsInt();
-            int eventId = EventServiceDriver.eventList.add(eventName, createUserId, numtickets);
+
+            /*
+            Pass a container into add method so we can retrieve the timestamp.
+            Generate a Lamport Timestamp right after creating the new event.
+             */
+            List<Integer> timestamp = new ArrayList<>();
+            int eventId = EventServiceDriver.eventList.add(uuid, eventName, createUserId, numtickets, timestamp);
 
             if (eventId > -1) {
+                // response after completing replication
+                primaryReplication(request.getRequestURI(), body, timestamp.get(0));
+
                 PrintWriter pw = response.getWriter();
                 JsonObject responseBody = getJSONResponse(eventId);
 

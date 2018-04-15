@@ -1,6 +1,9 @@
 package EventService.Servlet;
 
+import EventService.EventConcurrency.Event;
 import EventService.EventServiceDriver;
+import EventService.MultithreadingProcess.Replication;
+import Usage.State;
 import com.google.gson.*;
 
 import javax.servlet.http.HttpServlet;
@@ -40,7 +43,7 @@ public abstract class BaseServlet extends HttpServlet {
      * @return String
      * @throws IOException
      */
-    public String parseRequest(HttpServletRequest request) throws IOException {
+    String parseRequest(HttpServletRequest request) throws IOException {
         BufferedReader reader = request.getReader();
         StringBuilder sb = new StringBuilder();
         String str;
@@ -58,7 +61,7 @@ public abstract class BaseServlet extends HttpServlet {
      * @return JsonElement
      * @throws JsonParseException
      */
-    public JsonElement parseJson(String body) throws JsonParseException {
+    JsonElement parseJson(String body) throws JsonParseException {
         JsonParser parser = new JsonParser();
         return parser.parse(body);
     }
@@ -120,15 +123,45 @@ public abstract class BaseServlet extends HttpServlet {
         return parseJson(sb.toString());
     }
 
-    public String getCurrentAddress() {
+    protected String getCurrentAddress() {
         return EventServiceDriver.properties.get("host") +
                 ":" + EventServiceDriver.properties.get("port");
     }
 
-    public JsonArray getServiceList() {
+    JsonArray getServiceList() {
         JsonArray array = EventServiceDriver.frontendServiceList.getData();
         array.addAll(EventServiceDriver.eventServiceList.getData());
 
         return array;
+    }
+
+    /**
+     * Control the replication of non-primary nodes to be in order.
+     *
+     * @param body
+     * @throws InterruptedException
+     */
+    void timestampBlock(JsonObject body) throws Exception {
+        if (body.get("timestamp") == null) {
+            return;
+        }
+
+        int timestampFromPrimary = body.get("timestamp").getAsInt();
+        while (timestampFromPrimary - 1 > EventServiceDriver.lamportTimestamps.get()) {
+            Thread.sleep(50);
+        }
+
+        if (EventServiceDriver.state == State.PRIMARY) {
+            throw new Exception(); // abort since the request will be resend by frontend again
+        }
+    }
+
+    void primaryReplication(String uri, JsonObject body, int timestamp) {
+        if (EventServiceDriver.state != State.PRIMARY) {
+            return;
+        }
+
+        Replication rpc = new Replication(uri, body, timestamp);
+        rpc.startReplicate();
     }
 }

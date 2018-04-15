@@ -3,7 +3,7 @@ package EventService;
 import Concurrency.ServiceList;
 import EventService.MultithreadingProcess.GreetWithFrontEnd;
 import Usage.ServiceName;
-import EventService.Concurrency.EventList;
+import EventService.EventConcurrency.EventList;
 import EventService.Servlet.*;
 import EventService.MultithreadingProcess.Gossip;
 import Usage.State;
@@ -12,13 +12,14 @@ import org.eclipse.jetty.servlet.ServletHandler;
 
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * EventServiceDriver class for starting the Event Service.
  */
 public class EventServiceDriver {
     public static final String APP_TYPE = "application/json";
-    public static boolean alive = true;
+    public static volatile boolean alive = true;
     public static EventList eventList;
     public static Map<String, String> properties;
 
@@ -26,11 +27,13 @@ public class EventServiceDriver {
     public static ServiceList<String> eventServiceList;
     public static volatile String primaryUserService;
     public static volatile State state;
+    public static AtomicInteger lamportTimestamps;
 
     /**
      * main method to start the server.
      *
      * @param args
+     *      - address of primaries
      */
     public static void main(String[] args) {
         initDataStructures();
@@ -41,7 +44,7 @@ public class EventServiceDriver {
         }
         catch (Exception ex) {
             EventServiceDriver.alive = false;
-            System.err.println(ex);
+            ex.printStackTrace();
             System.exit(-1);
         }
     }
@@ -51,6 +54,7 @@ public class EventServiceDriver {
         EventServiceDriver.properties = new HashMap<>();
         EventServiceDriver.frontendServiceList = new ServiceList<>(ServiceName.FRONT_END.toString());
         EventServiceDriver.eventServiceList = new ServiceList<>(ServiceName.EVENT.toString());
+        EventServiceDriver.lamportTimestamps = new AtomicInteger();
     }
 
     private static void initProperties(String[] args) throws Exception {
@@ -88,19 +92,19 @@ public class EventServiceDriver {
         }
 
         // TODO: delete before deploy
-        EventServiceDriver.properties.put("port", "4599");
-        EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
+        EventServiceDriver.properties.put("port", "4595");
+        EventServiceDriver.eventServiceList.addService(currentHost + ":4595");
         EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
         port = true;
         EventServiceDriver.eventServiceList.setPrimary(currentHost + ":4599");
-        EventServiceDriver.state = State.PRIMARY;
-        //EventServiceDriver.state = State.SECONDARY;
+        //EventServiceDriver.state = State.PRIMARY;
+        EventServiceDriver.state = State.SECONDARY;
         primaryEvent = true;
         primaryUser = true;
         // TODO: delete before deploy
 
         if (!port || !primaryEvent || !primaryUser) {
-            throw new Exception("Lack of parameter: port, primaryEvent, or primaryUser.");
+            throw new Exception("Lack of parameter: port, primaryEvent, or primaryUser");
         }
     }
 

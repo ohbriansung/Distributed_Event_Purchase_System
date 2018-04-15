@@ -66,16 +66,19 @@ public class BullyElection extends BaseServlet implements Runnable {
         String currentAddress = getCurrentAddress();
 
         // change state
+        System.out.println("[State] Change into primary state");
         EventServiceDriver.state = State.PRIMARY;
         EventServiceDriver.eventServiceList.setPrimary(currentAddress);
 
         // start announcing to all services that "I am the new primary!"
         List<String> services = EventServiceDriver.eventServiceList.getList();
         services.addAll(EventServiceDriver.frontendServiceList.getList());
-        services.add(EventServiceDriver.primaryUserService);
+        if (EventServiceDriver.primaryUserService != null) {
+            services.add(EventServiceDriver.primaryUserService);
+        }
 
         for (String url : services) {
-            if (!url.equals(currentAddress)) {
+            if (!currentAddress.equals(url)) {
                 System.out.println("[Election] Sending announcement to " + url);
                 Thread newTask = new Thread(new Announce(url));
                 newTask.start();
@@ -84,7 +87,7 @@ public class BullyElection extends BaseServlet implements Runnable {
     }
 
     private class Election implements Runnable {
-        private String url;
+        private final String url;
 
         private Election(String url) {
             this.url = url;
@@ -97,22 +100,22 @@ public class BullyElection extends BaseServlet implements Runnable {
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     System.out.println("[Election] " + this.url + " has replied: there is a service with higher rank");
-                    beenReplied = true;
+                    BullyElection.this.beenReplied = true;
                 }
                 else {
-                    System.out.println("[Election] Remove " + this.url + " from the list");
+                    printRemove(this.url);
                     EventServiceDriver.eventServiceList.removeService(this.url);
                 }
             }
             catch (IOException ignored) {
-                System.out.println("[Election] Remove " + this.url + " from the list");
+                printRemove(this.url);
                 EventServiceDriver.eventServiceList.removeService(this.url);
             }
         }
     }
 
     private class Announce implements Runnable {
-        private String url;
+        private final String url;
 
         private Announce(String url) {
             this.url = url;
@@ -126,14 +129,18 @@ public class BullyElection extends BaseServlet implements Runnable {
                 HttpURLConnection connection = doPostRequest(this.url + "/election", requestBody);
 
                 if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    System.out.println("[Election] Remove " + this.url + " from the list");
+                    printRemove(this.url);
                     EventServiceDriver.eventServiceList.removeService(this.url);
                 }
             }
             catch (IOException ignored) {
-                System.out.println("[Election] Remove " + this.url + " from the list");
+                printRemove(this.url);
                 EventServiceDriver.eventServiceList.removeService(this.url);
             }
         }
+    }
+
+    private void printRemove(String url) {
+        System.out.println("[Election] Remove " + url + " from the list");
     }
 }

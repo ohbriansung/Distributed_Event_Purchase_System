@@ -22,6 +22,7 @@ public class ElectionServlet extends BaseServlet {
          */
         if (EventServiceDriver.state != State.CANDIDATE) {
             // change current state
+            System.out.println("[State] Change into candidate state");
             EventServiceDriver.state = State.CANDIDATE;
 
             // start sending election requests to services with higher rank
@@ -48,13 +49,14 @@ public class ElectionServlet extends BaseServlet {
 
             EventServiceDriver.eventServiceList.setPrimary(host + ":" + port);
             EventServiceDriver.state = State.SECONDARY;
+            System.out.println("[State] Change into secondary state");
+            response.setStatus(HttpURLConnection.HTTP_OK);
         }
         catch (IOException ioe) {
             response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
-            System.err.println(ioe);
+            ioe.printStackTrace();
         }
 
         response.setContentType(EventServiceDriver.APP_TYPE);
-        response.setStatus(HttpURLConnection.HTTP_OK);
     }
 }

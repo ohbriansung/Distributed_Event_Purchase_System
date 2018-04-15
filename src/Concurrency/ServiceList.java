@@ -33,14 +33,10 @@ public class ServiceList<T> {
         this.lock.writeLock().unlock();
     }
 
-    public boolean removeService(T service) {
-        boolean result;
-
+    public void removeService(T service) {
         this.lock.writeLock().lock();
-        result = this.list.remove(service);
+        this.list.remove(service);
         this.lock.writeLock().unlock();
-
-        return result;
     }
 
     public List<T> getList() {

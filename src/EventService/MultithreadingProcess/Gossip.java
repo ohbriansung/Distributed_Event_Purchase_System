@@ -22,7 +22,7 @@ public class Gossip extends BaseServlet implements Runnable {
                     List<String> services = EventServiceDriver.eventServiceList.getList();
 
                     for (String url : services) {
-                        if (!url.equals(getCurrentAddress())) {
+                        if (!getCurrentAddress().equals(url)) {
                             System.out.println("[Gossip] Start gossip with " + url);
                             Thread newTask = new Thread(new GreetAndUpdate(url, toRemove));
                             currentTasks.add(newTask);
@@ -34,31 +34,40 @@ public class Gossip extends BaseServlet implements Runnable {
                         task.join();
                     }
 
-                    // remove after finishing all tasks
-                    for (String service : toRemove) {
-                        System.out.println("[Gossip] Remove " + service + " from the list");
-                        EventServiceDriver.eventServiceList.removeService(service);
-
-                        // start an election if removing primary
-                        if (service.equals(EventServiceDriver.eventServiceList.getPrimary())) {
-                            Thread election = new Thread(new BullyElection());
-                            election.start();
-                            election.join();
-                        }
-                    }
+                    /*
+                    Remove after finishing all gossip tasks, so the services we want to remove
+                    won't be added again by other gossip tasks during this gossip cycle.
+                     */
+                    remove(toRemove);
                 }
 
                 Thread.sleep(10000);
             }
             catch (InterruptedException ie) {
-                System.err.println(ie);
+                ie.printStackTrace();
+            }
+        }
+    }
+
+    private void remove(List<String> toRemove) throws InterruptedException {
+        for (String service : toRemove) {
+            System.out.println("[Gossip] Remove " + service + " from the list");
+            EventServiceDriver.eventServiceList.removeService(service);
+
+            // start an election if removing primary
+            if (service.equals(EventServiceDriver.eventServiceList.getPrimary())) {
+                System.out.println("[State] Change into candidate state");
+                EventServiceDriver.state = State.CANDIDATE;
+                Thread election = new Thread(new BullyElection());
+                election.start();
+                election.join();
             }
         }
     }
 
     private class GreetAndUpdate implements Runnable {
-        private String url;
-        private Vector<String> toRemove;
+        private final String url;
+        private final Vector<String> toRemove;
 
         private GreetAndUpdate(String url, Vector<String> toRemove) {
             this.url = url;
