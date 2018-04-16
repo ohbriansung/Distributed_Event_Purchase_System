@@ -57,10 +57,9 @@ public class EventList {
                 timestamp.add(EventServiceDriver.lamportTimestamps.incrementAndGet());
                 this.committed.put(uuid, new int[] {timestamp.get(0), eventId});
 
-                String result = "[EventList] Event " + eventId +
-                        " has been created and committed with timestamp #" + timestamp.get(0) +
-                        " and uuid: " + uuid;
-                System.out.println(result);
+                System.out.println("[EventList] Event " + eventId +
+                        " has been created and committed with timestamp #" +timestamp.get(0) +
+                        " and uuid: " + uuid);
             }
             else {
                 // if the request has already been committed, get the timestamp and eventId by uuid
@@ -177,6 +176,40 @@ public class EventList {
 
             this.committed.put(obj.get("uuid").getAsString(), values);
         }
+    }
+
+    boolean containsLog(String uuid) {
+        boolean result;
+
+        this.lock.readLock().lock();
+        result = this.committed.containsKey(uuid);
+        this.lock.readLock().unlock();
+
+        return result;
+    }
+
+    int[] getLogDetails(String uuid) {
+        int[] result;
+
+        this.lock.readLock().lock();
+        result = this.committed.get(uuid);
+        this.lock.readLock().unlock();
+
+        return result;
+    }
+
+    void rollbackCommit(String uuid) {
+        this.lock.writeLock().lock();
+        this.committed.remove(uuid);
+        this.lock.writeLock().unlock();
+    }
+
+    void commit(String uuid, int timestamp, int eventId) {
+        int[] logDeatils = new int[] {timestamp, eventId};
+
+        this.lock.writeLock().lock();
+        this.committed.put(uuid, logDeatils);
+        this.lock.writeLock().unlock();
     }
 
     public void lockForBackup() {

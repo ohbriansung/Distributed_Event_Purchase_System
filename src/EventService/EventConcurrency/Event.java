@@ -1,7 +1,9 @@
 package EventService.EventConcurrency;
 
+import EventService.EventServiceDriver;
 import com.google.gson.JsonObject;
 
+import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -113,15 +115,42 @@ public class Event {
      * @return boolean
      *      - true for success, false for fail
      */
-    public boolean purchase(int tickets) {
-        boolean result = false;
+    public boolean purchase(String uuid, int tickets, List<Integer> timestamp) {
+        boolean result;
 
         this.lock.writeLock().lock();
-        if (this.avail - tickets >= 0 && this.purchased + tickets >= 0 &&
+        if (tickets > 0 && EventServiceDriver.eventList.containsLog(uuid)) {
+            int[] logDetail = EventServiceDriver.eventList.getLogDetails(uuid);
+            timestamp.add(logDetail[0]);
+            System.out.println("[Purchase] uuid: " + uuid +
+                    " has already been committed with timestamp #" + logDetail[0]);
+            result = true;
+        }
+        else if (this.avail - tickets >= 0 && this.purchased + tickets >= 0 &&
                 (this.avail - tickets) + (this.purchased + tickets) == this.numtickets) {
             this.avail -= tickets;
             this.purchased += tickets;
+
+            if (tickets < 0) {
+                EventServiceDriver.eventList.rollbackCommit(uuid);
+                EventServiceDriver.lamportTimestamps.decrementAndGetWithOutLock();
+                System.out.println("[Purchase] uuid: " + uuid +
+                        " with timestamp #" + timestamp.get(0) + " has been rolled back");
+            }
+            else {
+                int newTimestamp = EventServiceDriver.lamportTimestamps.incrementAndGetWithOutLock();
+
+                timestamp.add(newTimestamp);
+                EventServiceDriver.eventList.commit(uuid, newTimestamp, this.eventId);
+                System.out.println("[Purchase] Event " + this.eventId +
+                        " has been purchased and committed with timestamp #" + newTimestamp +
+                        " and uuid: " + uuid);
+            }
+
             result = true;
+        }
+        else {
+            result = false;
         }
         this.lock.writeLock().unlock();
 

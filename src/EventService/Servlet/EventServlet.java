@@ -22,7 +22,7 @@ public class EventServlet extends BaseServlet {
      */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("request: GET " + request.getRequestURI());
+        System.out.println("[Servlet] GET request " + request.getRequestURI());
 
         response.setContentType(EventServiceDriver.APP_TYPE);
         response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);

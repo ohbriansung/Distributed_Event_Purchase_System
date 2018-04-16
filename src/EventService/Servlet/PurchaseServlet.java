@@ -2,12 +2,15 @@ package EventService.Servlet;
 
 import EventService.EventConcurrency.Event;
 import EventService.EventServiceDriver;
+import Usage.State;
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PurchaseServlet class to handle request for purchasing tickets.
@@ -24,7 +27,7 @@ public class PurchaseServlet extends BaseServlet {
      */
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("request: POST " + request.getRequestURI());
+        System.out.println("[Servlet] POST request " + request.getRequestURI());
 
         response.setContentType(EventServiceDriver.APP_TYPE);
         response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
@@ -33,6 +36,9 @@ public class PurchaseServlet extends BaseServlet {
             String requestBody = parseRequest(request);
             JsonObject body = (JsonObject) parseJson(requestBody);
 
+            timestampBlock(body);
+
+            String uuid = body.get("uuid").getAsString();
             int eventIdURI = Integer.parseInt(request.getRequestURI().replaceFirst("/purchase/", ""));
             int eventId = body.get("eventid").getAsInt();
             int userId = body.get("userid").getAsInt();
@@ -42,19 +48,27 @@ public class PurchaseServlet extends BaseServlet {
                 Event event = EventServiceDriver.eventList.get(eventId);
 
                 if (event != null) {
-                    boolean success = event.purchase(tickets);
+                    List<Integer> timestamp = new ArrayList<>();
+                    EventServiceDriver.lamportTimestamps.lockWrite();
+                    boolean success = event.purchase(uuid, tickets, timestamp);
 
-                    if (success) {
+                    if (success && EventServiceDriver.state == State.PRIMARY) {
                         int responseCode = doPostUserTickets(userId, eventId, tickets);
 
                         if (responseCode == HttpURLConnection.HTTP_OK) {
+                            primaryReplication(request.getRequestURI(), body, timestamp.get(0));
                             response.setStatus(responseCode);
                         }
                         else { // rollback
                             tickets *= -1;
-                            event.purchase(tickets);
+                            event.purchase(uuid, tickets, timestamp);
                         }
                     }
+                    else if (success) {
+                        response.setStatus(HttpURLConnection.HTTP_OK);
+                    }
+
+                    EventServiceDriver.lamportTimestamps.unlockWrite();
                 }
             }
         }

@@ -1,5 +1,6 @@
 package EventService;
 
+import Concurrency.ConcurrentInteger;
 import Concurrency.ServiceList;
 import EventService.MultithreadingProcess.GreetWithFrontEnd;
 import Usage.ServiceName;
@@ -12,7 +13,6 @@ import org.eclipse.jetty.servlet.ServletHandler;
 
 import java.net.InetAddress;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * EventServiceDriver class for starting the Event Service.
@@ -27,7 +27,7 @@ public class EventServiceDriver {
     public static ServiceList<String> eventServiceList;
     public static volatile String primaryUserService;
     public static volatile State state;
-    public static AtomicInteger lamportTimestamps;
+    public static ConcurrentInteger lamportTimestamps;
 
     /**
      * main method to start the server.
@@ -54,7 +54,7 @@ public class EventServiceDriver {
         EventServiceDriver.properties = new HashMap<>();
         EventServiceDriver.frontendServiceList = new ServiceList<>(ServiceName.FRONT_END.toString());
         EventServiceDriver.eventServiceList = new ServiceList<>(ServiceName.EVENT.toString());
-        EventServiceDriver.lamportTimestamps = new AtomicInteger();
+        EventServiceDriver.lamportTimestamps = new ConcurrentInteger();
     }
 
     private static void initProperties(String[] args) throws Exception {
@@ -100,6 +100,7 @@ public class EventServiceDriver {
         //EventServiceDriver.state = State.PRIMARY;
         EventServiceDriver.state = State.SECONDARY;
         primaryEvent = true;
+        EventServiceDriver.primaryUserService = "localhost:4552";
         primaryUser = true;
         // TODO: delete before deploy
 

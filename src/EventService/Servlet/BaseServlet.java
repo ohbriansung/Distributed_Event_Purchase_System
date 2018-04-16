@@ -148,6 +148,7 @@ public abstract class BaseServlet extends HttpServlet {
 
         int timestampFromPrimary = body.get("timestamp").getAsInt();
         while (timestampFromPrimary - 1 > EventServiceDriver.lamportTimestamps.get()) {
+            System.out.println("[Block] Blocking request #" + timestampFromPrimary);
             Thread.sleep(50);
         }
 

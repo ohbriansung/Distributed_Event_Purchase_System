@@ -21,7 +21,7 @@ public class ListServlet extends BaseServlet {
      */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("request: GET /list");
+        System.out.println("[Servlet] GET request /list");
 
         response.setContentType(EventServiceDriver.APP_TYPE);
         response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
