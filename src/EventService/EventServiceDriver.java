@@ -85,20 +85,20 @@ public class EventServiceDriver {
                 }
                 primaryEvent = true;
             }
-            else if (args[i].equals("-primaryEvent")) {
+            else if (args[i].equals("-primaryUser")) {
                 EventServiceDriver.primaryUserService = args[i + 1];
                 primaryUser = true;
             }
         }
 
         // TODO: delete before deploy
-        EventServiceDriver.properties.put("port", "4596");
-        EventServiceDriver.eventServiceList.addService(currentHost + ":4596");
+        EventServiceDriver.properties.put("port", "4599");
+        EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
         EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
         port = true;
         EventServiceDriver.eventServiceList.setPrimary(currentHost + ":4599");
-        //EventServiceDriver.state = State.PRIMARY;
-        EventServiceDriver.state = State.SECONDARY;
+        EventServiceDriver.state = State.PRIMARY;
+        //EventServiceDriver.state = State.SECONDARY;
         primaryEvent = true;
         EventServiceDriver.primaryUserService = "localhost:4552";
         primaryUser = true;
@@ -126,7 +126,7 @@ public class EventServiceDriver {
         Thread gossipThread = new Thread(new Gossip());
         Thread greetFrontEnd = new Thread(new GreetWithFrontEnd());
 
-        System.out.println("[System] Starting server on " + EventServiceDriver.properties.get("host") +
+        System.out.println("[System] Starting event service on " + EventServiceDriver.properties.get("host") +
                 ":" + EventServiceDriver.properties.get("port"));
 
         server.start();

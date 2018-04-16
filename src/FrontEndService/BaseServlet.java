@@ -1,8 +1,6 @@
-package EventService.Servlet;
+package FrontEndService;
 
 import EventService.EventServiceDriver;
-import EventService.MultithreadingProcess.Replication;
-import Usage.State;
 import com.google.gson.*;
 
 import javax.servlet.http.HttpServlet;
@@ -13,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
 
 /**
  * Abstract BaseServlet class to extends HttpServlet
@@ -120,48 +119,5 @@ public abstract class BaseServlet extends HttpServlet {
         in.close();
 
         return parseJson(sb.toString());
-    }
-
-    protected String getCurrentAddress() {
-        return EventServiceDriver.properties.get("host") +
-                ":" + EventServiceDriver.properties.get("port");
-    }
-
-    JsonArray getServiceList() {
-        JsonArray array = EventServiceDriver.frontendServiceList.getData();
-        array.addAll(EventServiceDriver.eventServiceList.getData());
-
-        return array;
-    }
-
-    /**
-     * Control the replication of non-primary nodes to be in order.
-     *
-     * @param body
-     * @throws InterruptedException
-     */
-    void timestampBlock(JsonObject body) throws Exception {
-        if (body.get("timestamp") == null) {
-            return;
-        }
-
-        int timestampFromPrimary = body.get("timestamp").getAsInt();
-        while (timestampFromPrimary - 1 > EventServiceDriver.lamportTimestamps.get()) {
-            System.out.println("[Block] Blocking request #" + timestampFromPrimary);
-            Thread.sleep(50);
-        }
-
-        if (EventServiceDriver.state == State.PRIMARY) {
-            throw new Exception(); // abort since the request will be resend by frontend again
-        }
-    }
-
-    void primaryReplication(String uri, JsonObject body, int timestamp) {
-        if (EventServiceDriver.state != State.PRIMARY) {
-            return;
-        }
-
-        Replication rpc = new Replication(uri, body, timestamp);
-        rpc.startReplicate();
     }
 }
