@@ -62,24 +62,24 @@ public class BullyElection extends BaseServlet implements Runnable {
     }
 
     private void announceNewPrimary() {
-        String currentAddress = getCurrentAddress();
-
         // change state
         System.out.println("[State] Change into primary state");
         EventServiceDriver.state = State.PRIMARY;
-        EventServiceDriver.eventServiceList.setPrimary(currentAddress);
+        EventServiceDriver.eventServiceList.setPrimary(getCurrentAddress());
 
         // start announcing to all services that "I am the new primary!"
-        List<String> services = EventServiceDriver.eventServiceList.getList();
-        services.addAll(EventServiceDriver.frontendServiceList.getList());
-        if (EventServiceDriver.primaryUserService != null) {
-            services.add(EventServiceDriver.primaryUserService);
-        }
+        startAnnouncing("Event");
+        startAnnouncing("FrontEnd");
+    }
+
+    private void startAnnouncing(String type) {
+        List<String> services = (type.equals("Event")) ? EventServiceDriver.eventServiceList.getList() :
+                EventServiceDriver.frontendServiceList.getList();
 
         for (String url : services) {
-            if (!currentAddress.equals(url)) {
-                System.out.println("[Election] Sending announcement to " + url);
-                Thread newTask = new Thread(new Announce(url));
+            if (!getCurrentAddress().equals(url)) {
+                System.out.println("[Election] Sending announcement to " + type + " service on " + url);
+                Thread newTask = new Thread(new Announce(url, type));
                 newTask.start();
             }
         }
@@ -114,9 +114,11 @@ public class BullyElection extends BaseServlet implements Runnable {
 
     private class Announce implements Runnable {
         private final String url;
+        private final String type;
 
-        private Announce(String url) {
+        private Announce(String url, String type) {
             this.url = url;
+            this.type = type;
         }
 
         @Override
@@ -132,7 +134,13 @@ public class BullyElection extends BaseServlet implements Runnable {
             }
             catch (Exception ignored) {
                 printRemove(this.url);
-                EventServiceDriver.eventServiceList.removeService(this.url);
+
+                if (this.type.equals("Event")) {
+                    EventServiceDriver.eventServiceList.removeService(this.url);
+                }
+                else {
+                    EventServiceDriver.frontendServiceList.removeService(this.url);
+                }
             }
         }
     }
