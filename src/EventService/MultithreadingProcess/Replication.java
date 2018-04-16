@@ -4,7 +4,6 @@ import EventService.EventServiceDriver;
 import EventService.Servlet.BaseServlet;
 import com.google.gson.JsonObject;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,11 +59,10 @@ public class Replication extends BaseServlet {
                         this.url + Replication.this.uri, Replication.this.requestBody);
 
                 if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    System.out.println("[Replication] Remove " + this.url + " from the list");
-                    EventServiceDriver.eventServiceList.removeService(this.url);
+                    throw new Exception();
                 }
             }
-            catch (IOException ignored) {
+            catch (Exception ignored) {
                 System.out.println("[Replication] Remove " + this.url + " from the list");
                 EventServiceDriver.eventServiceList.removeService(this.url);
             }

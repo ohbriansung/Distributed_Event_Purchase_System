@@ -3,7 +3,6 @@ package EventService.MultithreadingProcess;
 import EventService.EventServiceDriver;
 import EventService.Servlet.BaseServlet;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.List;
 
@@ -33,11 +32,10 @@ public class GreetWithFrontEnd extends BaseServlet implements Runnable {
             HttpURLConnection connection = doGetRequest(url + "/greet");
 
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                System.out.println("[Greet] Remove frontend on " + url);
-                EventServiceDriver.frontendServiceList.removeService(url);
+                throw new Exception();
             }
         }
-        catch (IOException ignored) {
+        catch (Exception ignored) {
             System.out.println("[Greet] Remove frontend on " + url);
             EventServiceDriver.frontendServiceList.removeService(url);
         }

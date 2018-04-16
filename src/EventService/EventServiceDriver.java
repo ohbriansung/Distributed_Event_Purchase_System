@@ -92,8 +92,8 @@ public class EventServiceDriver {
         }
 
         // TODO: delete before deploy
-        EventServiceDriver.properties.put("port", "4595");
-        EventServiceDriver.eventServiceList.addService(currentHost + ":4595");
+        EventServiceDriver.properties.put("port", "4596");
+        EventServiceDriver.eventServiceList.addService(currentHost + ":4596");
         EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
         port = true;
         EventServiceDriver.eventServiceList.setPrimary(currentHost + ":4599");
@@ -117,8 +117,9 @@ public class EventServiceDriver {
         servHandler.addServletWithMapping(ListServlet.class, "/list");
         servHandler.addServletWithMapping(EventServlet.class, "/*");
         servHandler.addServletWithMapping(PurchaseServlet.class, "/purchase/*");
-        servHandler.addServletWithMapping(GreetServlet.class, "/greet");
+        servHandler.addServletWithMapping(GreetServlet.class, "/greet/*");
         servHandler.addServletWithMapping(ElectionServlet.class, "/election");
+        servHandler.addServletWithMapping(BackupServlet.class, "/backup");
         server.setHandler(servHandler);
 
         Thread gossipThread = new Thread(new Gossip());

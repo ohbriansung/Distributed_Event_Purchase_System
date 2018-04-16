@@ -48,12 +48,11 @@ public class CreateServlet extends BaseServlet {
             int eventId = EventServiceDriver.eventList.add(uuid, eventName, createUserId, numtickets, timestamp);
 
             if (eventId > -1) {
-                // response after completing replication
                 primaryReplication(request.getRequestURI(), body, timestamp.get(0));
 
+                // response after completing replication
                 PrintWriter pw = response.getWriter();
                 JsonObject responseBody = getJSONResponse(eventId);
-
                 response.setStatus(HttpURLConnection.HTTP_OK);
                 pw.println(responseBody.toString());
             }

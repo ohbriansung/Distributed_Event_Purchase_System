@@ -1,6 +1,8 @@
 package EventService.Servlet;
 
 import EventService.EventServiceDriver;
+import EventService.MultithreadingProcess.FullBackup;
+import Usage.State;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -26,18 +28,47 @@ public class GreetServlet extends BaseServlet {
             response.setStatus(HttpURLConnection.HTTP_OK);
             pw.println(responseBody.toString());
         }
-        catch (Exception ignored) {}
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void addSender(HttpServletRequest request) throws IOException {
+    private void addSender(HttpServletRequest request) throws Exception {
+        String uri = request.getRequestURI();
         String requestBody = parseRequest(request);
         JsonObject body = (JsonObject) parseJson(requestBody);
+        String address = request.getRemoteAddr() + ":" + body.get("port").getAsString();
 
-        String host = request.getRemoteAddr();
-        String port = body.get("port").getAsString();
+        System.out.println("[Servlet] POST request " + uri + " from " + address);
 
-        System.out.println("[Servlet] POST request /greet from " + host + ":" + port);
+        switch (uri) {
+            case "/greet/event":
+                addToEventServiceList(address);
+                break;
+            case "/greet/frontend":
+                addToFrontEndServiceList(address);
+                break;
+            default:
+                throw new Exception("[Servlet] Bad request: " + uri);
+        }
+    }
 
-        EventServiceDriver.eventServiceList.addService(host + ":" + port);
+    private void addToEventServiceList(String address) {
+        if (!EventServiceDriver.eventServiceList.contains(address)) {
+            System.out.println("[Servlet] Add " + address + " into event service list");
+            EventServiceDriver.eventServiceList.addService(address);
+
+            if (EventServiceDriver.state == State.PRIMARY) {
+                FullBackup fb = new FullBackup(address);
+                fb.startBackup();
+            }
+        }
+    }
+
+    private void addToFrontEndServiceList(String address) {
+        if (!EventServiceDriver.frontendServiceList.contains(address)) {
+            System.out.println("[Servlet] Add " + address + " into frontend service list");
+            EventServiceDriver.frontendServiceList.addService(address);
+        }
     }
 }

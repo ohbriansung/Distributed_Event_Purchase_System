@@ -19,16 +19,12 @@ public class Event {
     /**
      * Builder pattern to create an Event class with part of immutable data.
      */
-    public static class EventBuilder {
+    static class EventBuilder {
         private int eventId;
         private String eventName;
         private int createUserId;
         private int numtickets;
-
-        /**
-         * Constructor of EventBuilder.
-         */
-        public EventBuilder() {}
+        private int purchased = 0;
 
         /**
          * EventId setter.
@@ -36,7 +32,7 @@ public class Event {
          * @param eventId
          * @return EventBuilder
          */
-        public EventBuilder setEventId(int eventId) {
+        EventBuilder setEventId(int eventId) {
             this.eventId = eventId;
             return this;
         }
@@ -47,7 +43,7 @@ public class Event {
          * @param eventName
          * @return EventBuilder
          */
-        public EventBuilder setEventName(String eventName) {
+        EventBuilder setEventName(String eventName) {
             this.eventName = eventName;
             return this;
         }
@@ -58,7 +54,7 @@ public class Event {
          * @param createUserId
          * @return EventBuilder
          */
-        public EventBuilder setCreateUserId(int createUserId) {
+        EventBuilder setCreateUserId(int createUserId) {
             this.createUserId = createUserId;
             return this;
         }
@@ -69,8 +65,19 @@ public class Event {
          * @param numtickets
          * @return EventBuilder
          */
-        public EventBuilder setNumtickets(int numtickets) {
+        EventBuilder setNumtickets(int numtickets) {
             this.numtickets = numtickets;
+            return this;
+        }
+
+        /**
+         * Puchased number setter for backup usage.
+         *
+         * @param purchased
+         * @return EventBuilder
+         */
+        EventBuilder setPurchased(int purchased) {
+            this.purchased = purchased;
             return this;
         }
 
@@ -79,7 +86,7 @@ public class Event {
          *
          * @return Event
          */
-        public Event build() {
+        Event build() {
             return new Event(this);
         }
     }
@@ -95,8 +102,8 @@ public class Event {
         this.eventName = eb.eventName;
         this.createUserId = eb.createUserId;
         this.numtickets = eb.numtickets;
-        this.avail = this.numtickets;
-        this.purchased = 0;
+        this.purchased = eb.purchased;
+        this.avail = this.numtickets - this.purchased;
     }
 
     /**
@@ -139,5 +146,13 @@ public class Event {
         this.lock.readLock().unlock();
 
         return obj;
+    }
+
+    void lockForBackup() {
+        this.lock.readLock().lock();
+    }
+
+    void unlockFromBackup() {
+        this.lock.readLock().unlock();
     }
 }

@@ -2,6 +2,8 @@ package EventService.EventConcurrency;
 
 import EventService.EventServiceDriver;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,18 +50,23 @@ public class EventList {
                         .setCreateUserId(createUserId).setNumtickets(numtickets).build();
                 this.events.put(eventId, newEvent);
 
+                /*
+                Add the success timestamp into the list for the usage of the caller method.
+                Log the uuid, timestamp, and eventId for later usage like checking duplicate.
+                 */
                 timestamp.add(EventServiceDriver.lamportTimestamps.incrementAndGet());
                 this.committed.put(uuid, new int[] {timestamp.get(0), eventId});
 
-                String result = "[EventList] Event #" + eventId +
+                String result = "[EventList] Event " + eventId +
                         " has been created and committed with timestamp #" + timestamp.get(0) +
                         " and uuid: " + uuid;
                 System.out.println(result);
             }
             else {
+                // if the request has already been committed, get the timestamp and eventId by uuid
                 timestamp.add(this.committed.get(uuid)[0]);
                 eventId = this.committed.get(uuid)[1];
-                System.out.println("[EventList] uuid: " + uuid + " has already been committed as Event #" + eventId);
+                System.out.println("[EventList] uuid: " + uuid + " has already been committed as Event " + eventId);
             }
         }
         catch (Exception ignore) {
@@ -87,12 +94,12 @@ public class EventList {
     }
 
     /**
-     * Synchronized toString method to get a list of Events from HashMap with JSON format.
+     * Synchronized toJsonArray method to get the list of Events from HashMap with JSON format.
      *
-     * @return String
+     * @return JsonArray
      *      - a list of Events
      */
-    public String toString() {
+    public JsonArray toJsonArray() {
         JsonArray array = new JsonArray();
 
         this.lock.readLock().lock();
@@ -101,6 +108,90 @@ public class EventList {
         }
         this.lock.readLock().unlock();
 
-        return array.toString();
+        return array;
+    }
+
+    public JsonArray getCommittedLog() {
+        JsonArray array = new JsonArray();
+
+        for (String key : this.committed.keySet()) {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("uuid", key);
+            obj.addProperty("timestamp", this.committed.get(key)[0]);
+            obj.addProperty("eventId", this.committed.get(key)[1]);
+            array.add(obj);
+        }
+
+        return array;
+    }
+
+    public boolean restoreData(JsonObject data) {
+        boolean result;
+
+        try {
+            this.lock.writeLock().lock();
+
+            restoreEvents(data);
+            restoreLog(data);
+            EventServiceDriver.lamportTimestamps.set(data.get("timestamp").getAsInt());
+
+            result = true;
+        }
+        catch (Exception ignored) {
+            result = false;
+        }
+        finally {
+            this.lock.writeLock().unlock();
+        }
+
+        return result;
+    }
+
+    private void restoreEvents(JsonObject data) throws Exception {
+        this.events.clear();
+        JsonArray array = (JsonArray) data.get("eventlist");
+
+        for (int i = 0; i < array.size(); i++) {
+            JsonObject obj = (JsonObject) array.get(i);
+            int eventId = obj.get("eventid").getAsInt();
+            int purchased = obj.get("purchased").getAsInt();
+
+            Event newEvent = new Event.EventBuilder().setEventId(eventId)
+                    .setEventName(obj.get("eventname").getAsString())
+                    .setCreateUserId(obj.get("userid").getAsInt())
+                    .setNumtickets(obj.get("avail").getAsInt() + purchased)
+                    .setPurchased(purchased)
+                    .build();
+
+            this.events.put(eventId, newEvent);
+        }
+    }
+
+    private void restoreLog(JsonObject data) throws Exception {
+        this.committed.clear();
+        JsonArray array = (JsonArray) data.get("committedlog");
+
+        for (int i = 0; i < array.size(); i++) {
+            JsonObject obj = (JsonObject) array.get(i);
+            int[] values = new int[] {obj.get("timestamp").getAsInt(), obj.get("eventId").getAsInt()};
+
+            this.committed.put(obj.get("uuid").getAsString(), values);
+        }
+    }
+
+    public void lockForBackup() {
+        this.lock.readLock().lock();
+
+        for (Event event : events.values()) {
+            event.lockForBackup();
+        }
+    }
+
+    public void unlockFromBackup() {
+        for (Event event : events.values()) {
+            event.unlockFromBackup();
+        }
+
+        this.lock.readLock().unlock();
     }
 }

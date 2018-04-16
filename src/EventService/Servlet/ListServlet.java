@@ -28,7 +28,7 @@ public class ListServlet extends BaseServlet {
 
         try {
             PrintWriter pw = response.getWriter();
-            String responseBody = EventServiceDriver.eventList.toString();
+            String responseBody = EventServiceDriver.eventList.toJsonArray().toString();
 
             response.setStatus(HttpURLConnection.HTTP_OK);
             pw.println(responseBody);

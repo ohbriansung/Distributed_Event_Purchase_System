@@ -5,7 +5,6 @@ import EventService.Servlet.BaseServlet;
 import Usage.State;
 import com.google.gson.JsonObject;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,11 +102,10 @@ public class BullyElection extends BaseServlet implements Runnable {
                     BullyElection.this.beenReplied = true;
                 }
                 else {
-                    printRemove(this.url);
-                    EventServiceDriver.eventServiceList.removeService(this.url);
+                    throw new Exception();
                 }
             }
-            catch (IOException ignored) {
+            catch (Exception ignored) {
                 printRemove(this.url);
                 EventServiceDriver.eventServiceList.removeService(this.url);
             }
@@ -129,11 +127,10 @@ public class BullyElection extends BaseServlet implements Runnable {
                 HttpURLConnection connection = doPostRequest(this.url + "/election", requestBody);
 
                 if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    printRemove(this.url);
-                    EventServiceDriver.eventServiceList.removeService(this.url);
+                    throw new Exception();
                 }
             }
-            catch (IOException ignored) {
+            catch (Exception ignored) {
                 printRemove(this.url);
                 EventServiceDriver.eventServiceList.removeService(this.url);
             }

@@ -79,7 +79,7 @@ public class Gossip extends BaseServlet implements Runnable {
             try {
                 JsonObject requestBody = new JsonObject();
                 requestBody.addProperty("port", EventServiceDriver.properties.get("port"));
-                HttpURLConnection connection = doPostRequest(this.url + "/greet", requestBody);
+                HttpURLConnection connection = doPostRequest(this.url + "/greet/event", requestBody);
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     JsonArray responseBody = (JsonArray) parseResponse(connection);
@@ -87,13 +87,11 @@ public class Gossip extends BaseServlet implements Runnable {
                     System.out.println("[Gossip] List updated: " + responseBody.toString());
                 }
                 else {
-                    this.toRemove.add(this.url);
+                    throw new Exception();
                 }
             }
             catch (Exception ignored) {
-                if (!this.toRemove.contains(this.url)) {
-                    this.toRemove.add(this.url);
-                }
+                this.toRemove.add(this.url);
             }
         }
 

@@ -27,6 +27,16 @@ public class ServiceList<T> {
         this.service = service;
     }
 
+    public boolean contains(T service) {
+        boolean result;
+
+        this.lock.readLock().lock();
+        result = this.list.contains(service);
+        this.lock.readLock().unlock();
+
+        return result;
+    }
+
     public void addService(T service) {
         this.lock.writeLock().lock();
         this.list.add(service);
