@@ -1,5 +1,6 @@
-package FrontEndService;
+package FrontEndService.Servlet;
 
+import FrontEndService.FrontEndServiceDriver;
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,7 +24,7 @@ public class EventServlet extends BaseServlet {
         System.out.println("[Servlet] GET request " + request.getRequestURI());
 
         response.setContentType(FrontEndServiceDriver.APP_TYPE);
-        response.setStatus(400);
+        response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 
         try {
             String url = FrontEndServiceDriver.primaryEventService +
@@ -34,7 +35,7 @@ public class EventServlet extends BaseServlet {
                 PrintWriter pw = response.getWriter();
                 JsonObject responseBody = (JsonObject) parseResponse(connection);
 
-                response.setStatus(200);
+                response.setStatus(HttpURLConnection.HTTP_OK);
                 pw.println(responseBody.toString());
             }
         }
@@ -52,7 +53,7 @@ public class EventServlet extends BaseServlet {
         System.out.println("[Servlet] POST request " + request.getRequestURI());
 
         response.setContentType(FrontEndServiceDriver.APP_TYPE);
-        response.setStatus(400);
+        response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 
         try {
             String requestBody = parseRequest(request);
@@ -65,7 +66,7 @@ public class EventServlet extends BaseServlet {
             HttpURLConnection connection = doPostRequest(url, newRequestBody);
 
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                response.setStatus(200);
+                response.setStatus(HttpURLConnection.HTTP_OK);
             }
         }
         catch (Exception ignored) {}

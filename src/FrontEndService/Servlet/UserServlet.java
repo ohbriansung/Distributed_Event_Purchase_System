@@ -1,5 +1,6 @@
-package FrontEndService;
+package FrontEndService.Servlet;
 
+import FrontEndService.FrontEndServiceDriver;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -29,7 +30,7 @@ public class UserServlet extends BaseServlet {
         System.out.println("[Servlet] GET request " + request.getRequestURI());
 
         response.setContentType(FrontEndServiceDriver.APP_TYPE);
-        response.setStatus(400);
+        response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 
         try {
             String url = FrontEndServiceDriver.primaryUserService +
@@ -41,7 +42,7 @@ public class UserServlet extends BaseServlet {
                 JsonObject responseBody = (JsonObject) parseResponse(connection);
                 addEventDetail(responseBody);
 
-                response.setStatus(200);
+                response.setStatus(HttpURLConnection.HTTP_OK);
                 pw.println(responseBody.toString());
             }
         }
@@ -59,7 +60,7 @@ public class UserServlet extends BaseServlet {
         System.out.println("[Servlet] POST request " + request.getRequestURI());
 
         response.setContentType(FrontEndServiceDriver.APP_TYPE);
-        response.setStatus(400);
+        response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 
         try {
             String requestBody = parseRequest(request);
@@ -71,7 +72,7 @@ public class UserServlet extends BaseServlet {
                 HttpURLConnection connection = doPostRequest(url, body);
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    response.setStatus(200);
+                    response.setStatus(HttpURLConnection.HTTP_OK);
                 }
             }
         }

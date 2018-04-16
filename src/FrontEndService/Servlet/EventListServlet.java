@@ -1,5 +1,6 @@
-package FrontEndService;
+package FrontEndService.Servlet;
 
+import FrontEndService.FrontEndServiceDriver;
 import com.google.gson.JsonArray;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,7 +24,7 @@ public class EventListServlet extends BaseServlet {
         System.out.println("[Servlet] GET request /events");
 
         response.setContentType(FrontEndServiceDriver.APP_TYPE);
-        response.setStatus(400);
+        response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 
         try {
             String url = FrontEndServiceDriver.primaryEventService + "/list";
@@ -33,7 +34,7 @@ public class EventListServlet extends BaseServlet {
                 PrintWriter pw = response.getWriter();
                 JsonArray responseBody = (JsonArray) parseResponse(connection);
 
-                response.setStatus(200);
+                response.setStatus(HttpURLConnection.HTTP_OK);
                 pw.println(responseBody.toString());
             }
         }

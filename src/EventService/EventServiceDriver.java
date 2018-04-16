@@ -33,7 +33,7 @@ public class EventServiceDriver {
      * main method to start the server.
      *
      * @param args
-     *      - address of primaries
+     *      - current port and address of primaries
      */
     public static void main(String[] args) {
         initDataStructures();
@@ -66,28 +66,29 @@ public class EventServiceDriver {
         EventServiceDriver.properties.put("host", currentHost);
 
         for (int i = 0; i < args.length - 1; i++) {
-            if (args[i].equals("-port")) {
-                EventServiceDriver.properties.put("port", args[i + 1]);
-                EventServiceDriver.eventServiceList.addService(
-                        currentHost + ":" + EventServiceDriver.properties.get("port"));
-                port = true;
-            }
-            else if (args[i].equals("-primaryEvent")) {
-                if (args[i + 1].equals("this")) {
-                    EventServiceDriver.eventServiceList.setPrimary(
+            switch (args[i]) {
+                case "-port":
+                    EventServiceDriver.properties.put("port", args[i + 1]);
+                    EventServiceDriver.eventServiceList.addService(
                             currentHost + ":" + EventServiceDriver.properties.get("port"));
-                    EventServiceDriver.state = State.PRIMARY;
-                }
-                else {
-                    EventServiceDriver.eventServiceList.setPrimary(args[i + 1]);
-                    EventServiceDriver.eventServiceList.addService(args[i + 1]);
-                    EventServiceDriver.state = State.SECONDARY;
-                }
-                primaryEvent = true;
-            }
-            else if (args[i].equals("-primaryUser")) {
-                EventServiceDriver.primaryUserService = args[i + 1];
-                primaryUser = true;
+                    port = true;
+                    break;
+                case "-primaryEvent":
+                    if (args[i + 1].equals("this")) {
+                        EventServiceDriver.eventServiceList.setPrimary(
+                                currentHost + ":" + EventServiceDriver.properties.get("port"));
+                        EventServiceDriver.state = State.PRIMARY;
+                    } else {
+                        EventServiceDriver.eventServiceList.setPrimary(args[i + 1]);
+                        EventServiceDriver.eventServiceList.addService(args[i + 1]);
+                        EventServiceDriver.state = State.SECONDARY;
+                    }
+                    primaryEvent = true;
+                    break;
+                case "-primaryUser":
+                    EventServiceDriver.primaryUserService = args[i + 1];
+                    primaryUser = true;
+                    break;
             }
         }
 

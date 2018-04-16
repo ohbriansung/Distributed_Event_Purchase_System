@@ -1,11 +1,10 @@
 package FrontEndService;
 
+import FrontEndService.MultithreadingProcess.Gossip;
+import FrontEndService.Servlet.*;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.*;
 
@@ -24,6 +23,7 @@ public class FrontEndServiceDriver {
      * main method to start the server.
      *
      * @param args
+     *      - current port and address of primaries
      */
     public static void main(String[] args) {
         FrontEndServiceDriver.properties = new HashMap<>();
@@ -48,17 +48,19 @@ public class FrontEndServiceDriver {
         FrontEndServiceDriver.properties.put("host", currentHost);
 
         for (int i = 0; i < args.length - 1; i++) {
-            if (args[i].equals("-port")) {
-                FrontEndServiceDriver.properties.put("port", args[i + 1]);
-                port = true;
-            }
-            else if (args[i].equals("-primaryEvent")) {
-                FrontEndServiceDriver.primaryUserService = args[i + 1];
-                primaryEvent = true;
-            }
-            else if (args[i].equals("-primaryUser")) {
-                FrontEndServiceDriver.primaryUserService = args[i + 1];
-                primaryUser = true;
+            switch (args[i]) {
+                case "-port":
+                    FrontEndServiceDriver.properties.put("port", args[i + 1]);
+                    port = true;
+                    break;
+                case "-primaryEvent":
+                    FrontEndServiceDriver.primaryUserService = args[i + 1];
+                    primaryEvent = true;
+                    break;
+                case "-primaryUser":
+                    FrontEndServiceDriver.primaryUserService = args[i + 1];
+                    primaryUser = true;
+                    break;
             }
         }
 
@@ -86,17 +88,16 @@ public class FrontEndServiceDriver {
         servHandler.addServletWithMapping(EventCreateServlet.class, "/events/create");
         servHandler.addServletWithMapping(UserServlet.class, "/users/*");
         servHandler.addServletWithMapping(UserCreateServlet.class, "/users/create");
+        servHandler.addServletWithMapping(GreetServlet.class, "/greet");
         server.setHandler(servHandler);
 
-//        Thread gossipThread = new Thread(new Gossip());
-//        Thread greetFrontEnd = new Thread(new GreetWithFrontEnd());
+        Thread gossipThread = new Thread(new Gossip());
 
         System.out.println("[System] Starting frontend service on " + FrontEndServiceDriver.properties.get("host") +
                 ":" + FrontEndServiceDriver.properties.get("port"));
 
         server.start();
-//        gossipThread.start();
-//        greetFrontEnd.start();
+        gossipThread.start();
         server.join();
     }
 }

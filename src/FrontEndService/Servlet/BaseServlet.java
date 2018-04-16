@@ -1,4 +1,4 @@
-package FrontEndService;
+package FrontEndService.Servlet;
 
 import EventService.EventServiceDriver;
 import com.google.gson.*;
