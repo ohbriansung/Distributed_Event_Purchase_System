@@ -36,16 +36,24 @@ public class ServiceList<T> {
         return result;
     }
 
-    public void addService(T service) {
+    public boolean addService(T service) {
+        boolean result;
+
         this.lock.writeLock().lock();
-        this.list.add(service);
+        result = this.list.add(service);
         this.lock.writeLock().unlock();
+
+        return result;
     }
 
-    public void removeService(T service) {
+    public boolean removeService(T service) {
+        boolean result;
+
         this.lock.writeLock().lock();
-        this.list.remove(service);
+        result = this.list.remove(service);
         this.lock.writeLock().unlock();
+
+        return result;
     }
 
     public List<T> getList() {

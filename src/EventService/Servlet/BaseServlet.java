@@ -149,7 +149,7 @@ public abstract class BaseServlet extends HttpServlet {
         int timestampFromPrimary = body.get("timestamp").getAsInt();
         while (timestampFromPrimary - 1 > EventServiceDriver.lamportTimestamps.get()) {
             System.out.println("[Block] Blocking request #" + timestampFromPrimary);
-            Thread.sleep(50);
+            Thread.sleep(100);
         }
 
         if (EventServiceDriver.state == State.PRIMARY) {
@@ -168,6 +168,6 @@ public abstract class BaseServlet extends HttpServlet {
 
     protected int randomTime() {
         Random r = new Random();
-        return (r.nextInt(30) + 50) * 100;
+        return (r.nextInt(20) + 20) * 100;
     }
 }

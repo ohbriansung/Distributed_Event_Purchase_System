@@ -23,7 +23,6 @@ public class Gossip extends BaseServlet implements Runnable {
 
                     for (String url : services) {
                         if (!getCurrentAddress().equals(url)) {
-                            System.out.println("[Gossip] Start gossip with " + url);
                             Thread newTask = new Thread(new GreetAndUpdate(url, toRemove));
                             currentTasks.add(newTask);
                             newTask.start();
@@ -51,7 +50,7 @@ public class Gossip extends BaseServlet implements Runnable {
 
     private void remove(List<String> toRemove) throws InterruptedException {
         for (String service : toRemove) {
-            System.out.println("[Gossip] Remove event " + service + " from the list");
+            System.out.println("[Gossip] Remove event service " + service + " from the list");
             EventServiceDriver.eventServiceList.removeService(service);
 
             // start an election if removing primary
@@ -84,7 +83,6 @@ public class Gossip extends BaseServlet implements Runnable {
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     JsonArray responseBody = (JsonArray) parseResponse(connection);
                     updateServiceList(responseBody);
-                    System.out.println("[Gossip] List updated: " + responseBody.toString());
                 }
                 else {
                     throw new Exception();
@@ -98,14 +96,23 @@ public class Gossip extends BaseServlet implements Runnable {
         private void updateServiceList(JsonArray newList) {
             for (int i = 0; i < newList.size(); i++) {
                 try {
+                    boolean success;
                     JsonObject obj = (JsonObject) newList.get(i);
                     String service = obj.get("service").getAsString();
 
                     if (service.equals(ServiceName.FRONT_END.toString())) {
-                        EventServiceDriver.frontendServiceList.addService(obj.get("address").getAsString());
+                        success = EventServiceDriver.frontendServiceList.addService(obj.get("address").getAsString());
+                        if (success) {
+                            System.out.println("[Gossip] Added " +
+                                    obj.get("address").getAsString() + " into frontend service list");
+                        }
                     }
                     else if (service.equals(ServiceName.EVENT.toString())) {
-                        EventServiceDriver.eventServiceList.addService(obj.get("address").getAsString());
+                        success = EventServiceDriver.eventServiceList.addService(obj.get("address").getAsString());
+                        if (success) {
+                            System.out.println("[Gossip] Added " +
+                                    obj.get("address").getAsString() + " into event service list");
+                        }
                     }
                 }
                 catch (Exception ignored) {}

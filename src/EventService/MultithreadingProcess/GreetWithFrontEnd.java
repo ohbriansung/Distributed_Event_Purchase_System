@@ -15,11 +15,10 @@ public class GreetWithFrontEnd extends BaseServlet implements Runnable {
                 List<String> services = EventServiceDriver.frontendServiceList.getList();
 
                 for (String url : services) {
-                    System.out.println("[Greet] Greet with frontend on " + url);
                     greetAndUpdate(url);
                 }
 
-                Thread.sleep(5000);
+                Thread.sleep(500);
             }
             catch (InterruptedException ie) {
                 ie.printStackTrace();

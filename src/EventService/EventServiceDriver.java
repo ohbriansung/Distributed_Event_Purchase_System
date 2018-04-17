@@ -93,8 +93,8 @@ public class EventServiceDriver {
         }
 
         // TODO: delete before deploy
-        EventServiceDriver.properties.put("port", "4599");
-        EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
+        EventServiceDriver.properties.put("port", "4597");
+        EventServiceDriver.eventServiceList.addService(currentHost + ":4597");
         EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
         port = true;
         EventServiceDriver.eventServiceList.setPrimary(currentHost + ":4599");

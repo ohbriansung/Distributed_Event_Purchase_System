@@ -10,22 +10,13 @@ public class Gossip extends BaseServlet implements Runnable {
     public void run() {
         while (FrontEndServiceDriver.alive) {
             String address = FrontEndServiceDriver.primaryEventService;
-
-            System.out.println("[Gossip] Start gossip with " + address);
             JsonObject requestBody = new JsonObject();
             requestBody.addProperty("port", FrontEndServiceDriver.properties.get("port"));
 
             try {
                 HttpURLConnection connection = doPostRequest(address + "/greet/frontend", requestBody);
-
-                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    System.out.println("[Gossip] " + address + " is there");
-                }
-                else {
-                    System.out.println("[Gossip] " + address + " is currently unreachable");
-                }
-
-                Thread.sleep(10000);
+                connection.getResponseCode();
+                Thread.sleep(1000);
             }
             catch (Exception ignored) {}
         }

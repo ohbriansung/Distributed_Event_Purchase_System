@@ -37,8 +37,6 @@ public class GreetServlet extends BaseServlet {
         JsonObject body = (JsonObject) parseJson(requestBody);
         String address = request.getRemoteAddr() + ":" + body.get("port").getAsString();
 
-        System.out.println("[Servlet] POST request " + uri + " from " + address);
-
         switch (uri) {
             case "/greet/event":
                 addToEventServiceList(address);
@@ -55,7 +53,7 @@ public class GreetServlet extends BaseServlet {
 
     private void addToEventServiceList(String address) {
         if (!EventServiceDriver.eventServiceList.contains(address)) {
-            System.out.println("[Servlet] Add " + address + " into event service list");
+            System.out.println("[Servlet] Added " + address + " into event service list");
             EventServiceDriver.eventServiceList.addService(address);
 
             if (EventServiceDriver.state == State.PRIMARY) {
@@ -67,7 +65,7 @@ public class GreetServlet extends BaseServlet {
 
     private void addToFrontEndServiceList(String address) {
         if (!EventServiceDriver.frontendServiceList.contains(address)) {
-            System.out.println("[Servlet] Add " + address + " into frontend service list");
+            System.out.println("[Servlet] Added " + address + " into frontend service list");
             EventServiceDriver.frontendServiceList.addService(address);
         }
     }

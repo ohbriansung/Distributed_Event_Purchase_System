@@ -8,7 +8,6 @@ public class GreetServlet extends BaseServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("[Servlet] GET request /greet");
         response.setStatus(HttpURLConnection.HTTP_OK);
     }
 }
