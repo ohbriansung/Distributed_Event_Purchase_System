@@ -1,7 +1,6 @@
 package FrontEndService;
 
-import FrontEndService.MultithreadingProcess.Gossip;
-import FrontEndService.Servlet.*;
+import Concurrency.BlockingThreads;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 
@@ -13,11 +12,12 @@ import java.util.*;
  */
 public class FrontEndServiceDriver {
     public static final String APP_TYPE = "application/json";
-    public static volatile boolean alive = true;
-    public static Map<String, String> properties;
+    static volatile boolean alive = true;
+    static Map<String, String> properties;
 
-    public static volatile String primaryEventService;
-    public static volatile String primaryUserService;
+    static BlockingThreads blockingThreads;
+    static volatile String primaryEventService;
+    static volatile String primaryUserService;
 
     /**
      * main method to start the server.
@@ -27,6 +27,7 @@ public class FrontEndServiceDriver {
      */
     public static void main(String[] args) {
         FrontEndServiceDriver.properties = new HashMap<>();
+        FrontEndServiceDriver.blockingThreads = new BlockingThreads();
 
         try {
             FrontEndServiceDriver.initProperties(args);
@@ -54,7 +55,7 @@ public class FrontEndServiceDriver {
                     port = true;
                     break;
                 case "-primaryEvent":
-                    FrontEndServiceDriver.primaryUserService = args[i + 1];
+                    FrontEndServiceDriver.primaryEventService = args[i + 1];
                     primaryEvent = true;
                     break;
                 case "-primaryUser":
@@ -65,9 +66,9 @@ public class FrontEndServiceDriver {
         }
 
         // TODO: delete before deploy
-        FrontEndServiceDriver.properties.put("port", "4599");
+        FrontEndServiceDriver.properties.put("port", "4561");
         port = true;
-        FrontEndServiceDriver.primaryUserService = "localhost:4599";
+        FrontEndServiceDriver.primaryEventService = "localhost:4599";
         primaryEvent = true;
         FrontEndServiceDriver.primaryUserService = "localhost:4552";
         primaryUser = true;
@@ -89,6 +90,7 @@ public class FrontEndServiceDriver {
         servHandler.addServletWithMapping(UserServlet.class, "/users/*");
         servHandler.addServletWithMapping(UserCreateServlet.class, "/users/create");
         servHandler.addServletWithMapping(GreetServlet.class, "/greet");
+        servHandler.addServletWithMapping(TerminateServlet.class, "/terminate");
         server.setHandler(servHandler);
 
         Thread gossipThread = new Thread(new Gossip());

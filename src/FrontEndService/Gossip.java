@@ -1,7 +1,5 @@
-package FrontEndService.MultithreadingProcess;
+package FrontEndService;
 
-import FrontEndService.FrontEndServiceDriver;
-import FrontEndService.Servlet.BaseServlet;
 import com.google.gson.JsonObject;
 
 import java.net.HttpURLConnection;
@@ -19,6 +17,13 @@ public class Gossip extends BaseServlet implements Runnable {
 
             try {
                 HttpURLConnection connection = doPostRequest(address + "/greet/frontend", requestBody);
+
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    System.out.println("[Gossip] " + address + " is there");
+                }
+                else {
+                    System.out.println("[Gossip] " + address + " is currently unreachable");
+                }
 
                 Thread.sleep(10000);
             }

@@ -98,8 +98,8 @@ public class EventServiceDriver {
         EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
         port = true;
         EventServiceDriver.eventServiceList.setPrimary(currentHost + ":4599");
-        EventServiceDriver.state = State.PRIMARY;
-        //EventServiceDriver.state = State.SECONDARY;
+        //EventServiceDriver.state = State.PRIMARY;
+        EventServiceDriver.state = State.SECONDARY;
         primaryEvent = true;
         EventServiceDriver.primaryUserService = "localhost:4552";
         primaryUser = true;
@@ -122,6 +122,7 @@ public class EventServiceDriver {
         servHandler.addServletWithMapping(GreetServlet.class, "/greet/*");
         servHandler.addServletWithMapping(ElectionServlet.class, "/election");
         servHandler.addServletWithMapping(BackupServlet.class, "/backup");
+        servHandler.addServletWithMapping(TerminateServlet.class, "/terminate");
         server.setHandler(servHandler);
 
         Thread gossipThread = new Thread(new Gossip());

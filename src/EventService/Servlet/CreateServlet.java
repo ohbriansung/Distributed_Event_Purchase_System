@@ -1,7 +1,6 @@
 package EventService.Servlet;
 
 import EventService.EventServiceDriver;
-import Usage.State;
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;

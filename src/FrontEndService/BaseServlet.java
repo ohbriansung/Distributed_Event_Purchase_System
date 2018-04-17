@@ -1,6 +1,5 @@
-package FrontEndService.Servlet;
+package FrontEndService;
 
-import EventService.EventServiceDriver;
 import com.google.gson.*;
 
 import javax.servlet.http.HttpServlet;
@@ -12,7 +11,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-
 /**
  * Abstract BaseServlet class to extends HttpServlet
  * and to contain commonly used methods.
@@ -22,12 +20,12 @@ public abstract class BaseServlet extends HttpServlet {
     /**
      * Initialize a new HttpURLConnection for particular service.
      *
-     * @param urlSring
+     * @param urlString
      * @return HttpURLConnection
      * @throws IOException
      */
-    private HttpURLConnection initConnection(String urlSring) throws IOException {
-        URL url = new URL("http://" + urlSring);
+    private HttpURLConnection initConnection(String urlString) throws IOException {
+        URL url = new URL("http://" + urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setConnectTimeout(5000);
 
@@ -71,7 +69,7 @@ public abstract class BaseServlet extends HttpServlet {
      * @return HttpURLConnection
      * @throws IOException
      */
-    public HttpURLConnection doGetRequest(String url) throws IOException {
+    HttpURLConnection doGetRequest(String url) throws IOException {
         HttpURLConnection connection = initConnection(url);
         connection.setRequestMethod("GET");
 
@@ -89,7 +87,7 @@ public abstract class BaseServlet extends HttpServlet {
     public HttpURLConnection doPostRequest(String url, JsonObject body) throws IOException {
         HttpURLConnection connection = initConnection(url);
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", EventServiceDriver.APP_TYPE);
+        connection.setRequestProperty("Content-Type", FrontEndServiceDriver.APP_TYPE);
         connection.setDoOutput(true);
 
         OutputStream os = connection.getOutputStream();
@@ -108,7 +106,7 @@ public abstract class BaseServlet extends HttpServlet {
      * @throws JsonParseException
      * @throws IOException
      */
-    public JsonElement parseResponse(HttpURLConnection connection) throws JsonParseException, IOException {
+    JsonElement parseResponse(HttpURLConnection connection) throws JsonParseException, IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder sb = new StringBuilder();
 
@@ -119,5 +117,21 @@ public abstract class BaseServlet extends HttpServlet {
         in.close();
 
         return parseJson(sb.toString());
+    }
+
+    void blockAndRetry(String uuid, int failure) {
+        if (failure < 3) {
+            try {
+                System.out.println("[Servlet] request with uuid: " + uuid + " has failed " + failure +
+                        " time(s), blocking the request and trying it later");
+
+                FrontEndServiceDriver.blockingThreads.add(Thread.currentThread());
+                Thread.sleep(3000);
+            }
+            catch (InterruptedException ignore) {}
+        }
+        else {
+            System.out.println("[Servlet] request with uuid: " + uuid + " has failed 3 times");
+        }
     }
 }

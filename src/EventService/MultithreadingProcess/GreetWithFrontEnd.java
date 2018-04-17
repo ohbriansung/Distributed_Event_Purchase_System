@@ -19,7 +19,7 @@ public class GreetWithFrontEnd extends BaseServlet implements Runnable {
                     greetAndUpdate(url);
                 }
 
-                Thread.sleep(10000);
+                Thread.sleep(5000);
             }
             catch (InterruptedException ie) {
                 ie.printStackTrace();
@@ -36,7 +36,7 @@ public class GreetWithFrontEnd extends BaseServlet implements Runnable {
             }
         }
         catch (Exception ignored) {
-            System.out.println("[Greet] Remove frontend on " + url);
+            System.out.println("[Greet] Remove frontend " + url + " from the list");
             EventServiceDriver.frontendServiceList.removeService(url);
         }
     }

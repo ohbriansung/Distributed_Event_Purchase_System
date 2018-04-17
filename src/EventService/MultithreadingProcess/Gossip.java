@@ -41,7 +41,7 @@ public class Gossip extends BaseServlet implements Runnable {
                     remove(toRemove);
                 }
 
-                Thread.sleep(10000);
+                Thread.sleep(randomTime());
             }
             catch (InterruptedException ie) {
                 ie.printStackTrace();
@@ -51,7 +51,7 @@ public class Gossip extends BaseServlet implements Runnable {
 
     private void remove(List<String> toRemove) throws InterruptedException {
         for (String service : toRemove) {
-            System.out.println("[Gossip] Remove " + service + " from the list");
+            System.out.println("[Gossip] Remove event " + service + " from the list");
             EventServiceDriver.eventServiceList.removeService(service);
 
             // start an election if removing primary

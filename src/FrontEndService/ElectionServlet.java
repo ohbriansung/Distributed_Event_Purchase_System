@@ -1,6 +1,5 @@
-package FrontEndService.Servlet;
+package FrontEndService;
 
-import FrontEndService.FrontEndServiceDriver;
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +18,10 @@ public class ElectionServlet extends BaseServlet {
             System.out.println("[Servlet] POST request /election from " + address +
                     " announcing there is a new primary");
 
+            System.out.println("[Election] Change primary event service and wake all blocking threads...");
             FrontEndServiceDriver.primaryEventService = address;
+            FrontEndServiceDriver.blockingThreads.wakeAndRemoveAll();
+
             response.setStatus(HttpURLConnection.HTTP_OK);
         }
         catch (Exception ioe) {

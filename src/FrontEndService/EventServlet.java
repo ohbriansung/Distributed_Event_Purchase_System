@@ -1,12 +1,13 @@
-package FrontEndService.Servlet;
+package FrontEndService;
 
-import FrontEndService.FrontEndServiceDriver;
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
+import java.util.UUID;
 
 /**
  * EventServlet to handle request for event information and purchase.
@@ -61,15 +62,31 @@ public class EventServlet extends BaseServlet {
             String[] arguments = request.getRequestURI().replace("/events/", "").split("/");
             int tickets = body.get("tickets").getAsInt();
 
-            JsonObject newRequestBody = getNewRequestBody(arguments, tickets);
             String url = FrontEndServiceDriver.primaryEventService + "/" + arguments[1] + "/" + arguments[0];
-            HttpURLConnection connection = doPostRequest(url, newRequestBody);
+            String uuid = UUID.randomUUID().toString();
+            JsonObject newRequestBody = getNewRequestBody(arguments, tickets, uuid);
 
-            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                response.setStatus(HttpURLConnection.HTTP_OK);
+            int failure = 0;
+            while (failure < 3) {
+                try {
+                    HttpURLConnection connection = doPostRequest(url, newRequestBody);
+
+                    if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        response.setStatus(HttpURLConnection.HTTP_OK);
+                    }
+
+                    System.out.println("[Servlet] request with uuid: " + uuid + " has been completed");
+                    break; // exit loop after completing the request without broken connection
+                }
+                catch (IOException ignored) {
+                    failure++;
+                    blockAndRetry(uuid, failure);
+                }
             }
         }
-        catch (Exception ignored) {}
+        catch (Exception ignored) {
+            // other failures like JsonParseException
+        }
     }
 
     /**
@@ -80,11 +97,12 @@ public class EventServlet extends BaseServlet {
      * @return JsonObject
      * @throws NumberFormatException
      */
-    private JsonObject getNewRequestBody(String[] arguments, int tickets) throws NumberFormatException {
+    private JsonObject getNewRequestBody(String[] arguments, int tickets, String uuid) throws NumberFormatException {
         JsonObject obj = new JsonObject();
         obj.addProperty("userid", Integer.parseInt(arguments[2]));
         obj.addProperty("eventid", Integer.parseInt(arguments[0]));
         obj.addProperty("tickets", tickets);
+        obj.addProperty("uuid", uuid);
 
         return obj;
     }

@@ -8,10 +8,8 @@ import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
-import java.util.List;
 
 public class GreetServlet extends BaseServlet {
 
@@ -47,6 +45,8 @@ public class GreetServlet extends BaseServlet {
                 break;
             case "/greet/frontend":
                 addToFrontEndServiceList(address);
+                break;
+            case "/greet/loadbalancing":
                 break;
             default:
                 throw new Exception("[Servlet] Bad request: " + uri);

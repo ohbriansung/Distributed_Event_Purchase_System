@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Random;
 
 /**
  * Abstract BaseServlet class to extends HttpServlet
@@ -23,12 +24,12 @@ public abstract class BaseServlet extends HttpServlet {
     /**
      * Initialize a new HttpURLConnection for particular service.
      *
-     * @param urlSring
+     * @param urlString
      * @return HttpURLConnection
      * @throws IOException
      */
-    private HttpURLConnection initConnection(String urlSring) throws IOException {
-        URL url = new URL("http://" + urlSring);
+    private HttpURLConnection initConnection(String urlString) throws IOException {
+        URL url = new URL("http://" + urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setConnectTimeout(5000);
 
@@ -163,5 +164,10 @@ public abstract class BaseServlet extends HttpServlet {
 
         Replication rpc = new Replication(uri, body, timestamp);
         rpc.startReplicate();
+    }
+
+    protected int randomTime() {
+        Random r = new Random();
+        return (r.nextInt(30) + 50) * 100;
     }
 }

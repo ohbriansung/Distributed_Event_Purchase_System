@@ -1,6 +1,5 @@
-package FrontEndService.Servlet;
+package FrontEndService;
 
-import FrontEndService.FrontEndServiceDriver;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;

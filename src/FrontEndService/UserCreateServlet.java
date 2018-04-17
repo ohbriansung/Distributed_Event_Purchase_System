@@ -1,6 +1,5 @@
-package FrontEndService.Servlet;
+package FrontEndService;
 
-import FrontEndService.FrontEndServiceDriver;
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
