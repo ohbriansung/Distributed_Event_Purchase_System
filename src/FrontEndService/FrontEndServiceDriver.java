@@ -90,6 +90,7 @@ public class FrontEndServiceDriver {
         servHandler.addServletWithMapping(UserServlet.class, "/users/*");
         servHandler.addServletWithMapping(UserCreateServlet.class, "/users/create");
         servHandler.addServletWithMapping(GreetServlet.class, "/greet");
+        servHandler.addServletWithMapping(ElectionServlet.class, "/election");
         servHandler.addServletWithMapping(TerminateServlet.class, "/terminate");
         server.setHandler(servHandler);
 

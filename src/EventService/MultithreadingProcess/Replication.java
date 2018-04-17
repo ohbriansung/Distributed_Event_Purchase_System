@@ -17,7 +17,6 @@ public class Replication extends BaseServlet {
         this.uri = uri;
         this.requestBody = requestBody;
         this.timestamp = timestamp;
-
         this.requestBody.addProperty("timestamp", timestamp);
     }
 
@@ -27,10 +26,19 @@ public class Replication extends BaseServlet {
 
         for (String url : services) {
             if (!getCurrentAddress().equals(url)) {
-                System.out.println("[Replication] Sending replicate #" + this.timestamp + " to " + url);
                 Thread newTask = new Thread(new SendReplicate(url));
                 currentTasks.add(newTask);
                 newTask.start();
+
+                if (this.requestBody.get("demo") != null) {
+                    // simulate election after different version, and resending request from frontend to new primary
+                    try {
+                        newTask.join();
+                        System.out.println("[Demo] One replicate has been sent, shutting down...");
+                    }
+                    catch (InterruptedException ignored) {}
+                    System.exit(-1);
+                }
             }
         }
 
@@ -53,7 +61,6 @@ public class Replication extends BaseServlet {
 
         @Override
         public void run() {
-
             try {
                 HttpURLConnection connection = doPostRequest(
                         this.url + Replication.this.uri, Replication.this.requestBody);
@@ -61,8 +68,12 @@ public class Replication extends BaseServlet {
                 if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     throw new Exception();
                 }
+
+                System.out.println("[Replication] Sent replicate #" +
+                        Replication.this.requestBody.get("timestamp").getAsInt() + " to " + this.url);
             }
             catch (Exception ignored) {
+                ignored.printStackTrace();
                 System.out.println("[Replication] Remove " + this.url + " from the list");
                 EventServiceDriver.eventServiceList.removeService(this.url);
             }

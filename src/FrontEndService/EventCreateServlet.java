@@ -56,6 +56,7 @@ public class EventCreateServlet extends BaseServlet {
                 }
                 catch (IOException ignored) {
                     failure++;
+                    body.remove("demo"); // for demo purpose, check EventService.Replication.startReplicate()
                     blockAndRetry(uuid, failure);
                 }
             }
