@@ -65,15 +65,6 @@ public class FrontEndServiceDriver {
             }
         }
 
-        // TODO: delete before deploy
-        FrontEndServiceDriver.properties.put("port", "4561");
-        port = true;
-        FrontEndServiceDriver.primaryEventService = "localhost:4599";
-        primaryEvent = true;
-        FrontEndServiceDriver.primaryUserService = "localhost:4552";
-        primaryUser = true;
-        // TODO: delete before deploy
-
         if (!port || !primaryEvent || !primaryUser) {
             throw new Exception("Lack of parameter: port, primaryEvent, or primaryUser");
         }

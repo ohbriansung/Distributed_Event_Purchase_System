@@ -92,19 +92,6 @@ public class EventServiceDriver {
             }
         }
 
-        // TODO: delete before deploy
-        EventServiceDriver.properties.put("port", "4597");
-        EventServiceDriver.eventServiceList.addService(currentHost + ":4597");
-        EventServiceDriver.eventServiceList.addService(currentHost + ":4599");
-        port = true;
-        EventServiceDriver.eventServiceList.setPrimary(currentHost + ":4599");
-        //EventServiceDriver.state = State.PRIMARY;
-        EventServiceDriver.state = State.SECONDARY;
-        primaryEvent = true;
-        EventServiceDriver.primaryUserService = "localhost:4552";
-        primaryUser = true;
-        // TODO: delete before deploy
-
         if (!port || !primaryEvent || !primaryUser) {
             throw new Exception("Lack of parameter: port, primaryEvent, or primaryUser");
         }
