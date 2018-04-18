@@ -57,8 +57,8 @@ public class GreetServlet extends BaseServlet {
             EventServiceDriver.eventServiceList.addService(address);
 
             if (EventServiceDriver.state == State.PRIMARY) {
-                FullBackup fb = new FullBackup(address);
-                fb.startBackup();
+                FullBackup fb = new FullBackup();
+                fb.startBackup(address);
             }
         }
     }

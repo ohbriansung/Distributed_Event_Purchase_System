@@ -168,6 +168,6 @@ public abstract class BaseServlet extends HttpServlet {
 
     protected int randomTime() {
         Random r = new Random();
-        return (r.nextInt(20) + 20) * 100;
+        return (r.nextInt(10) + 20) * 100; // 2 to 3 seconds per heartbeat
     }
 }

@@ -1,6 +1,8 @@
 package EventService.EventConcurrency;
 
 import EventService.EventServiceDriver;
+import EventService.MultithreadingProcess.FullBackup;
+import Usage.State;
 import com.google.gson.JsonObject;
 
 import java.util.List;
@@ -121,9 +123,23 @@ public class Event {
         this.lock.writeLock().lock();
         if (tickets > 0 && EventServiceDriver.eventList.containsLog(uuid)) {
             int[] logDetail = EventServiceDriver.eventList.getLogDetails(uuid);
-            timestamp.add(logDetail[0]);
-            System.out.println("[Purchase] uuid: " + uuid +
-                    " has already been committed with timestamp #" + logDetail[0]);
+
+            /*
+            If the request has already been committed, check if the timestamp matches.
+            If not request to primary for full backup. Finally, get the timestamp and eventId by uuid.
+             */
+            if (timestamp.get(0) != null && timestamp.get(0) != logDetail[0]) {
+                System.out.println("[EventList] uuid doesn't match with timestamp, requesting for full backup...");
+                FullBackup fb = new FullBackup();
+                fb.requestForBackup(true);
+                timestamp.add(0, EventServiceDriver.eventList.getLogDetails(uuid)[0]);
+            }
+            else {
+                System.out.println("[EventList] uuid: " + uuid +
+                        " has already been committed with timestamp #" + logDetail[0]);
+                timestamp.add(logDetail[0]);
+            }
+
             result = true;
         }
         else if (this.avail - tickets >= 0 && this.purchased + tickets >= 0 &&
@@ -138,7 +154,13 @@ public class Event {
                         " with timestamp #" + timestamp.get(0) + " has been rolled back");
             }
             else {
-                int newTimestamp = EventServiceDriver.lamportTimestamps.incrementAndGetWithOutLock();
+                int newTimestamp;
+                if (EventServiceDriver.state == State.PRIMARY) {
+                    newTimestamp = EventServiceDriver.lamportTimestamps.incrementAndGetWithOutLock();
+                }
+                else {
+                    newTimestamp = EventServiceDriver.lamportTimestamps.incrementAndGet();
+                }
 
                 timestamp.add(newTimestamp);
                 EventServiceDriver.eventList.commit(uuid, newTimestamp, this.eventId);

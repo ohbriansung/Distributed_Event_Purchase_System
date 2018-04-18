@@ -1,8 +1,8 @@
 package EventService.EventConcurrency;
 
 import EventService.EventServiceDriver;
+import EventService.MultithreadingProcess.FullBackup;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.HashMap;
@@ -62,10 +62,22 @@ public class EventList {
                         " and uuid: " + uuid);
             }
             else {
-                // if the request has already been committed, get the timestamp and eventId by uuid
-                timestamp.add(this.committed.get(uuid)[0]);
+                /*
+                If the request has already been committed, check if the timestamp matches.
+                If not request to primary for full backup. Finally, get the timestamp and eventId by uuid.
+                 */
+                if (timestamp.get(0) != null && timestamp.get(0) != this.committed.get(uuid)[0]) {
+                    System.out.println("[EventList] uuid doesn't match with timestamp, requesting for full backup...");
+                    FullBackup fb = new FullBackup();
+                    fb.requestForBackup(false);
+                }
+                else {
+                    System.out.println("[EventList] uuid: " + uuid +
+                            " has already been committed with timestamp #" + this.committed.get(uuid)[0]);
+                }
+
+                timestamp.add(0, this.committed.get(uuid)[0]);
                 eventId = this.committed.get(uuid)[1];
-                System.out.println("[EventList] uuid: " + uuid + " has already been committed as Event " + eventId);
             }
         }
         catch (Exception ignore) {
@@ -124,11 +136,13 @@ public class EventList {
         return array;
     }
 
-    public boolean restoreData(JsonObject data) {
+    public boolean restoreData(JsonObject data, boolean lock) {
         boolean result;
 
         try {
-            this.lock.writeLock().lock();
+            if (lock) {
+                this.lock.writeLock().lock();
+            }
 
             restoreEvents(data);
             restoreLog(data);
@@ -140,7 +154,9 @@ public class EventList {
             result = false;
         }
         finally {
-            this.lock.writeLock().unlock();
+            if (lock) {
+                this.lock.writeLock().unlock();
+            }
         }
 
         return result;

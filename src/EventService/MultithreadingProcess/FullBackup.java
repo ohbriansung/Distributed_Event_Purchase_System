@@ -6,24 +6,20 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class FullBackup extends BaseServlet {
-    private final String address;
 
-    public FullBackup(String address) {
-        this.address = address;
-    }
-
-    public void startBackup() {
-        System.out.println("[Backup] Starting backup to " + this.address);
+    public void startBackup(String address) {
+        System.out.println("[Backup] Starting backup to " + address);
         EventServiceDriver.eventList.lockForBackup();
 
         try {
             JsonObject requestBody = getData();
-            HttpURLConnection connection = doPostRequest(this.address + "/backup", requestBody);
+            HttpURLConnection connection = doPostRequest(address + "/backup", requestBody);
 
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                System.out.println("[Backup] Finished backup to " + this.address);
+                System.out.println("[Backup] Finished backup to " + address);
             }
             else {
                 throw new Exception();
@@ -31,15 +27,15 @@ public class FullBackup extends BaseServlet {
         }
         catch (Exception ignored) {
             ignored.printStackTrace();
-            System.out.println("[Backup] Failed to backup to " + this.address + ", remove from the list");
-            EventServiceDriver.eventServiceList.removeService(this.address);
+            System.out.println("[Backup] Failed to backup to " + address + ", remove from the list");
+            EventServiceDriver.eventServiceList.removeService(address);
         }
         finally {
             EventServiceDriver.eventList.unlockFromBackup();
         }
     }
 
-    private JsonObject getData() {
+    public JsonObject getData() {
         JsonObject data = new JsonObject();
 
         int timestamp = EventServiceDriver.lamportTimestamps.get();
@@ -52,5 +48,18 @@ public class FullBackup extends BaseServlet {
         data.add("committedlog", committedLog);
 
         return data;
+    }
+
+    public void requestForBackup(boolean lock) {
+        try {
+            String url = EventServiceDriver.eventServiceList.getPrimary() + "/backup";
+            HttpURLConnection connection = doGetRequest(url);
+            JsonObject responseBody = (JsonObject) parseResponse(connection);
+            EventServiceDriver.eventList.restoreData(responseBody, lock);
+            System.out.println("[Backup] Data has been restored");
+        }
+        catch (Exception ignored) {
+            System.out.println("[Backup] Failed to restore data");
+        }
     }
 }

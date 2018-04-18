@@ -49,7 +49,14 @@ public class PurchaseServlet extends BaseServlet {
 
                 if (event != null) {
                     List<Integer> timestamp = new ArrayList<>();
-                    EventServiceDriver.lamportTimestamps.lockWrite();
+                    if (EventServiceDriver.state != State.PRIMARY) {
+                        timestamp.add(body.get("timestamp").getAsInt());
+                    }
+                    else {
+                        // secondary won't rollback, so no need to lock the Lamport timestamp for the entire write
+                        EventServiceDriver.lamportTimestamps.lockWrite();
+                    }
+
                     boolean success = event.purchase(uuid, tickets, timestamp);
 
                     if (success && EventServiceDriver.state == State.PRIMARY) {
@@ -68,7 +75,9 @@ public class PurchaseServlet extends BaseServlet {
                         response.setStatus(HttpURLConnection.HTTP_OK);
                     }
 
-                    EventServiceDriver.lamportTimestamps.unlockWrite();
+                    if (EventServiceDriver.state == State.PRIMARY) {
+                        EventServiceDriver.lamportTimestamps.unlockWrite();
+                    }
                 }
             }
         }

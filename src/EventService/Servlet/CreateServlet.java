@@ -1,6 +1,7 @@
 package EventService.Servlet;
 
 import EventService.EventServiceDriver;
+import Usage.State;
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,11 +40,15 @@ public class CreateServlet extends BaseServlet {
             int createUserId = body.get("userid").getAsInt();
             int numtickets = body.get("numtickets").getAsInt();
 
+            List<Integer> timestamp = new ArrayList<>();
+            if (EventServiceDriver.state != State.PRIMARY) {
+                timestamp.add(body.get("timestamp").getAsInt());
+            }
+
             /*
             Pass a container into add method so we can retrieve the timestamp.
             Generate a Lamport Timestamp right after creating the new event.
              */
-            List<Integer> timestamp = new ArrayList<>();
             int eventId = EventServiceDriver.eventList.add(uuid, eventName, createUserId, numtickets, timestamp);
 
             if (eventId > -1) {
