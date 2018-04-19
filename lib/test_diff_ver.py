@@ -11,7 +11,7 @@ class TestServer(unittest.TestCase):
         self.address = address
 
     def test_different_version_of_secondary(self):
-        url = "http://" + self.address[self.no] + "/events/create"
+        url = "http://" + self.address + "/events/create"
         create_data = {"userid":2294, "eventname":"Big Data", "numtickets":20, "demo":True}
         r = requests.post(url, json=create_data)
         self.assertEqual(r.status_code, 200)
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         print ("usage: python3 test_diff_ver.py <address>")
         sys.exit()
 
-    test_no = sys.argv[1]
+    address = sys.argv[1]
     suite = unittest.TestSuite()
 
     # test different versions of secondary nodes to check election and consistency

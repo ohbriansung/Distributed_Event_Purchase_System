@@ -8,11 +8,10 @@ class TestServer(unittest.TestCase):
 
     def __init__(self, testname, test_no, address):
         super(TestServer, self).__init__(testname)
-        self.test_no = test_no
         self.address = address
         self.events = ["Distributed Software Development", "System Foundations", "Principles of Software Developments"]
         self.user_id = 2294
-        self.create_data = {"userid":self.user_id, "eventname":self.events[test_no], "numtickets":20}
+        self.create_data = {"userid":self.user_id, "eventname":self.events[int(test_no)], "numtickets":20}
         self.purchase_data = {"tickets":2}
 
     def test_create(self):
