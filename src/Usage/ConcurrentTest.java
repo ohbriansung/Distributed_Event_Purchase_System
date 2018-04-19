@@ -11,10 +11,17 @@ import java.util.List;
 public class ConcurrentTest {
 
     public static void main(String[] args) throws Exception {
+
+        if (args.length < 1) {
+            System.out.println("Usage: java -cp project4.jar Usage.ConcurrentTest <address>");
+            System.exit(-1);
+        }
+
+        String address = args[0];
         List<Thread> list = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
-            list.add(new Thread(new ConcurrentTest.Request()));
+            list.add(new Thread(new ConcurrentTest.Request(address)));
         }
 
         for (Thread thread : list) {
@@ -30,13 +37,13 @@ public class ConcurrentTest {
         private JsonObject body;
         private HttpURLConnection connection;
 
-        public Request() throws Exception {
+        public Request(String address) throws Exception {
             this.body = new JsonObject();
             this.body.addProperty("userid", 2294);
-            this.body.addProperty("eventname", "Distributed Software Development");
-            this.body.addProperty("numtickets", 20);
+            this.body.addProperty("eventname", "Concurrency test");
+            this.body.addProperty("numtickets", 10);
 
-            URL url = new URL("http://localhost:4560/events/create");
+            URL url = new URL("http://" + address + "/events/create");
             this.connection = (HttpURLConnection) url.openConnection();
             this.connection.setRequestMethod("POST");
             this.connection.setRequestProperty("Content-Type", "application/json");
