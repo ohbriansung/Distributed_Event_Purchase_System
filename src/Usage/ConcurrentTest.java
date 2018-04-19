@@ -12,15 +12,16 @@ public class ConcurrentTest {
 
     public static void main(String[] args) throws Exception {
 
-        if (args.length < 1) {
-            System.out.println("Usage: java -cp project4.jar Usage.ConcurrentTest <address>");
+        if (args.length < 2) {
+            System.out.println("Usage: java -cp project4.jar Usage.ConcurrentTest <address> <times_of_test>");
             System.exit(-1);
         }
 
         String address = args[0];
+        int times = Integer.parseInt(args[1]);
         List<Thread> list = new ArrayList<>();
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < times; i++) {
             list.add(new Thread(new ConcurrentTest.Request(address)));
         }
 
@@ -37,7 +38,7 @@ public class ConcurrentTest {
         private JsonObject body;
         private HttpURLConnection connection;
 
-        public Request(String address) throws Exception {
+        Request(String address) throws Exception {
             this.body = new JsonObject();
             this.body.addProperty("userid", 2294);
             this.body.addProperty("eventname", "Concurrency test");
