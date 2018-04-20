@@ -122,24 +122,7 @@ public class Event {
 
         this.lock.writeLock().lock();
         if (tickets > 0 && EventServiceDriver.eventList.containsLog(uuid)) {
-            int[] logDetail = EventServiceDriver.eventList.getLogDetails(uuid);
-
-            /*
-            If the request has already been committed, check if the timestamp matches.
-            If not request to primary for full backup. Finally, get the timestamp and eventId by uuid.
-             */
-            if (timestamp.get(0) != null && timestamp.get(0) != logDetail[0]) {
-                System.out.println("[EventList] uuid doesn't match with timestamp, requesting for full backup...");
-                FullBackup fb = new FullBackup();
-                fb.requestForBackup(true);
-                timestamp.add(0, EventServiceDriver.eventList.getLogDetails(uuid)[0]);
-            }
-            else {
-                System.out.println("[EventList] uuid: " + uuid +
-                        " has already been committed with timestamp #" + logDetail[0]);
-                timestamp.add(logDetail[0]);
-            }
-
+            checkMatch(uuid, timestamp);
             result = true;
         }
         else if (this.avail - tickets >= 0 && this.purchased + tickets >= 0 &&
@@ -197,6 +180,27 @@ public class Event {
         this.lock.readLock().unlock();
 
         return obj;
+    }
+
+    private void checkMatch(String uuid, List<Integer> timestamp) {
+        int[] logDetail = EventServiceDriver.eventList.getLogDetails(uuid);
+
+        /*
+        If the request has already been committed, check if the timestamp matches.
+        If not request to primary for full backup. Finally, get the timestamp and eventId by uuid.
+         */
+        if (EventServiceDriver.state != State.PRIMARY &&
+                timestamp.get(0) != null && timestamp.get(0) != logDetail[0]) {
+            System.out.println("[EventList] uuid doesn't match with timestamp, requesting for full backup...");
+            FullBackup fb = new FullBackup();
+            fb.requestForBackup(true);
+            timestamp.add(0, EventServiceDriver.eventList.getLogDetails(uuid)[0]);
+        }
+        else {
+            System.out.println("[EventList] uuid: " + uuid +
+                    " has already been committed with timestamp #" + logDetail[0]);
+            timestamp.add(logDetail[0]);
+        }
     }
 
     void lockForBackup() {

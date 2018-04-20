@@ -49,12 +49,13 @@ public class PurchaseServlet extends BaseServlet {
 
                 if (event != null) {
                     List<Integer> timestamp = new ArrayList<>();
-                    if (EventServiceDriver.state != State.PRIMARY) {
-                        timestamp.add(body.get("timestamp").getAsInt());
-                    }
-                    else {
+                    if (EventServiceDriver.state == State.PRIMARY) {
                         // secondary won't rollback, so no need to lock the Lamport timestamp for the entire write
                         EventServiceDriver.lamportTimestamps.lockWrite();
+                    }
+                    else {
+                        // for checking the match between uuid and timestamp
+                        timestamp.add(body.get("timestamp").getAsInt());
                     }
 
                     boolean success = event.purchase(uuid, tickets, timestamp);

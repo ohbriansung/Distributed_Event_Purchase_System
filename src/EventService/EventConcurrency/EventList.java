@@ -2,6 +2,7 @@ package EventService.EventConcurrency;
 
 import EventService.EventServiceDriver;
 import EventService.MultithreadingProcess.FullBackup;
+import Usage.State;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -44,7 +45,12 @@ public class EventList {
         try {
             this.lock.writeLock().lock();
 
-            if (!this.committed.containsKey(uuid)) {
+            if (this.committed.containsKey(uuid)) {
+                checkMatch(uuid, timestamp);
+                timestamp.add(0, this.committed.get(uuid)[0]);
+                eventId = this.committed.get(uuid)[1];
+            }
+            else {
                 eventId = this.events.size();
                 Event newEvent = new Event.EventBuilder().setEventId(eventId).setEventName(eventName)
                         .setCreateUserId(createUserId).setNumtickets(numtickets).build();
@@ -61,26 +67,9 @@ public class EventList {
                         " has been created and committed with timestamp #" +timestamp.get(0) +
                         " and uuid: " + uuid);
             }
-            else {
-                /*
-                If the request has already been committed, check if the timestamp matches.
-                If not request to primary for full backup. Finally, get the timestamp and eventId by uuid.
-                 */
-                if (timestamp.get(0) != null && timestamp.get(0) != this.committed.get(uuid)[0]) {
-                    System.out.println("[EventList] uuid doesn't match with timestamp, requesting for full backup...");
-                    FullBackup fb = new FullBackup();
-                    fb.requestForBackup(false);
-                }
-                else {
-                    System.out.println("[EventList] uuid: " + uuid +
-                            " has already been committed with timestamp #" + this.committed.get(uuid)[0]);
-                }
-
-                timestamp.add(0, this.committed.get(uuid)[0]);
-                eventId = this.committed.get(uuid)[1];
-            }
         }
         catch (Exception ignore) {
+
             eventId = -1;
         }
         finally {
@@ -226,6 +215,24 @@ public class EventList {
         this.lock.writeLock().lock();
         this.committed.put(uuid, logDeatils);
         this.lock.writeLock().unlock();
+    }
+
+    private void checkMatch(String uuid, List<Integer> timestamp) {
+        /*
+        If the request has already been committed, check if the timestamp matches.
+        If not request to primary for full backup. Finally, get the timestamp and eventId by uuid.
+         */
+        if (EventServiceDriver.state != State.PRIMARY &&
+                timestamp.get(0) != null &&
+                timestamp.get(0) != this.committed.get(uuid)[0]) {
+            System.out.println("[EventList] uuid doesn't match with timestamp, requesting for full backup...");
+            FullBackup fb = new FullBackup();
+            fb.requestForBackup(false);
+        }
+        else {
+            System.out.println("[EventList] uuid: " + uuid +
+                    " has already been committed with timestamp #" + this.committed.get(uuid)[0]);
+        }
     }
 
     public void lockForBackup() {

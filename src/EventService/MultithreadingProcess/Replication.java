@@ -11,12 +11,10 @@ import java.util.List;
 public class Replication extends BaseServlet {
     private final String uri;
     private final JsonObject requestBody;
-    private final int timestamp;
 
     public Replication(String uri, JsonObject requestBody, int timestamp) {
         this.uri = uri;
         this.requestBody = requestBody;
-        this.timestamp = timestamp;
         this.requestBody.addProperty("timestamp", timestamp);
     }
 

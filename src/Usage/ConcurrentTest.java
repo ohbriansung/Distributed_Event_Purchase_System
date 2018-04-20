@@ -14,7 +14,7 @@ public class ConcurrentTest {
 
         if (args.length < 2) {
             System.out.println("Usage: java -cp project4.jar Usage.ConcurrentTest <address> <times_of_test>");
-            System.exit(-1);
+            return;
         }
 
         String address = args[0];
@@ -32,6 +32,8 @@ public class ConcurrentTest {
         for (Thread thread : list) {
             thread.join();
         }
+
+        System.out.println("[Test] Concurrency test finished");
     }
 
     private static class Request implements Runnable {
