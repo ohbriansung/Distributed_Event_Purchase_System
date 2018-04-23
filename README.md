@@ -2,9 +2,7 @@
 
 ## Introduction
 
-This is a event create/purchase RESTful API Service, implemented a replicated, fault tolerant version of the service with strong consistency model. Focus on the replication of the event service.
-
-Client can create user, create event, purchase tickets, and transfer tickets.
+This is an event create/purchase RESTful API Service. Client can create user, create event, purchase tickets, and transfer tickets. Focus on the replication features of the event service which is a replicated, fault tolerant service.
 
 ## Overview
 
