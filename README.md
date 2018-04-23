@@ -14,9 +14,7 @@ The architecture of the service looks like this:
 
 ## Design and Demo
 
-The design of my service and the demonstration of the testing framework are recorded here:
-
-[![Project4 Demo](https://i.imgur.com/nGvkb6L.jpg)](https://youtu.be/fq_06zrdYSk?t=17m53s)
+The design of my service and the demonstration of the testing framework are recorded here: [Youtube](https://youtu.be/fq_06zrdYSk?t=17m53s)
 
 ## Features
 
@@ -50,7 +48,7 @@ When a front end service receives a write request, it will assign the request wi
 
 ## API
 
-#### Front End Service
+### Front End Service
 
 <details>
 <summary>GET /events</summary>
@@ -248,7 +246,7 @@ Responses:
 </details>
 
 
-#### Event Service
+### Event Service
 
 <details>
 <summary>POST /create</summary>
@@ -452,7 +450,7 @@ Responses:
 </details>
 
 
-#### User Service
+### User Service
 
 <details>
 <summary>POST /create</summary>
