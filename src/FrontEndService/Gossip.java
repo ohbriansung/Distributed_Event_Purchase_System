@@ -4,8 +4,14 @@ import com.google.gson.JsonObject;
 
 import java.net.HttpURLConnection;
 
+/**
+ * Gossip class to greet with the primary event service to maintain the membership.
+ */
 public class Gossip extends BaseServlet implements Runnable {
 
+    /**
+     * run method to send the greet request to the primary event service every second.
+     */
     @Override
     public void run() {
         while (FrontEndServiceDriver.alive) {

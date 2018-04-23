@@ -36,6 +36,7 @@ public class PurchaseServlet extends BaseServlet {
             String requestBody = parseRequest(request);
             JsonObject body = (JsonObject) parseJson(requestBody);
 
+            // for secondary to check the order of the timestamp
             timestampBlock(body);
 
             String uuid = body.get("uuid").getAsString();
@@ -64,6 +65,7 @@ public class PurchaseServlet extends BaseServlet {
                         int responseCode = doPostUserTickets(userId, eventId, tickets);
 
                         if (responseCode == HttpURLConnection.HTTP_OK) {
+                            // for primary to start the replication
                             primaryReplication(request.getRequestURI(), body, timestamp.get(0));
                             response.setStatus(responseCode);
                         }

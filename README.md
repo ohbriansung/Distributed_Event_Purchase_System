@@ -16,31 +16,31 @@ The design of my service and the demonstration of the testing framework are reco
 
 ## Features
 
-#### Fault Tolerance
+### Fault Tolerance
 
 In a system with N data storage servers, you will tolerate the failure of up to N-1 nodes. As long as one data storage server is available, a client request will succeed.
 
-#### Read-My-Writes Consistency
+### Read-My-Writes Consistency
 
 A front end will not receive data older than it has seen before if fresher data is available. If, for example, a client posts a message and then performs a read, the response the client receives must include the most recent messages unless all data storage servers storing the newest data have failed.
 
-#### Membership
+### Membership
 
 The event services will maintain the membership of all the services, including: primary/secondary event service, primary user service, and front end service. Event services will gossip with each other to get the service list, and to add itself to each other's list. Front end services will greet with the primary service to add itself to primary's list. The primary event/user service will be configured when the service starts. Once event service detcets a service is unreachable, it will remove it from its list.
 
-#### Bully Election
+### Bully Election
 
 During the gossip between secondaries, start an election when detecting primary is down. Send GET request to other event services with higher rank address. If no reply, send POST request to announce there is a new primary. If received a response, it means that there is an outstanding service, wait for announcement. Each node will only send one election request in one round of the election, unless it timeout to wait for the announcement.
 
-#### Service States
+### Service States
 
 The event service has three states: primary, secondary, and candidate. The service will start with primary or secondary state by configuration. A secondary will trun into candidate state when it detects the primary is down or when it receives a election request. A candidate will turn into primary if there is no outstanding node, and it will turn into secondary when receives an announcement.
 
-#### Committed Log
+### Committed Log
 
 A synchronized data structure to maintain the logs of committed request. It contains with Universally Unique IDentifier, Lamport Timestamps, and the committed data. The purpose is to avoid duplicate data, and to maintain the order of replications.
 
-#### Replication
+### Replication
 
 When a front end service receives a write request, it will assign the request with an uuid and pass it to the primary event service. The primary event service will start the write operation, and right after it finished, it will assign the request with a Lamport Timestamp, commit to log, and pass it to the secondary event service. If the primary fails during replication, the front end will hold the request and retry it when a new primary comes up. If a new primary has already committed the write with the same uuid, it will ignore it and pass it with the timestamp it committed to the secondary event service. If a secondary receives a write request with the uuid it already committed, it will match with its timestamp. If the uuid and the timestamp don't match, it will request a full copy from the primary to overwrite the data. Full backup from primary will only happen when new secondary comes up or the above situation.
 

@@ -10,8 +10,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+/**
+ * ElectionServlet to handle election request.
+ */
 public class ElectionServlet extends BaseServlet {
 
+    /**
+     * Reply HTTP 200 and start sending election request to other event services.
+     * If no reply, announce new primary. Otherwise, wait for announcement or timeout and retry.
+     *
+     * @param request
+     * @param response
+     */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("[Servlet] GET request /election");
@@ -35,6 +45,13 @@ public class ElectionServlet extends BaseServlet {
         response.setStatus(HttpURLConnection.HTTP_OK);
     }
 
+    /**
+     * Receive announcement and change the configuration of the primary event service.
+     * Turn into secondary state.
+     *
+     * @param request
+     * @param response
+     */
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {

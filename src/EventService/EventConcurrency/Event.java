@@ -182,6 +182,13 @@ public class Event {
         return obj;
     }
 
+    /**
+     * For secondaries to check the correctness of existing uuid and timestamp.
+     * If doesn't match, send a full backup request to the primary.
+     *
+     * @param uuid
+     * @param timestamp
+     */
     private void checkMatch(String uuid, List<Integer> timestamp) {
         int[] logDetail = EventServiceDriver.eventList.getLogDetails(uuid);
 
@@ -203,10 +210,16 @@ public class Event {
         }
     }
 
+    /**
+     * Lock read from outside.
+     */
     void lockForBackup() {
         this.lock.readLock().lock();
     }
 
+    /**
+     * Unlock read from outside.
+     */
     void unlockFromBackup() {
         this.lock.readLock().unlock();
     }

@@ -8,8 +8,16 @@ import com.google.gson.JsonObject;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * FullBackup class to handle full backup request.
+ */
 public class FullBackup extends BaseServlet {
 
+    /**
+     * Start the backup operation in primary.
+     *
+     * @param address
+     */
     public void startBackup(String address) {
         System.out.println("[Backup] Starting backup to " + address);
         EventServiceDriver.eventList.lockForBackup();
@@ -35,6 +43,11 @@ public class FullBackup extends BaseServlet {
         }
     }
 
+    /**
+     * Return the snapshot of current timestamp, event data, and committed log.
+     *
+     * @return JsonObject
+     */
     public JsonObject getData() {
         JsonObject data = new JsonObject();
 
@@ -50,6 +63,11 @@ public class FullBackup extends BaseServlet {
         return data;
     }
 
+    /**
+     * Send backup request to primary and restore the data from the response body.
+     *
+     * @param lock
+     */
     public void requestForBackup(boolean lock) {
         try {
             String url = EventServiceDriver.eventServiceList.getPrimary() + "/backup";

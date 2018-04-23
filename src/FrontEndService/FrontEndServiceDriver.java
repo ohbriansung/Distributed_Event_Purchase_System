@@ -40,6 +40,12 @@ public class FrontEndServiceDriver {
         }
     }
 
+    /**
+     * Parse arguments and store the data.
+     *
+     * @param args
+     * @throws Exception
+     */
     private static void initProperties(String[] args) throws Exception {
         boolean port = false;
         boolean primaryEvent = false;
@@ -70,6 +76,11 @@ public class FrontEndServiceDriver {
         }
     }
 
+    /**
+     * Start the server to listen and greet with primary event.
+     *
+     * @throws Exception
+     */
     private static void startServer() throws Exception {
         int port = Integer.parseInt(FrontEndServiceDriver.properties.get("port"));
         Server server = new Server(port);
@@ -82,7 +93,6 @@ public class FrontEndServiceDriver {
         servHandler.addServletWithMapping(UserCreateServlet.class, "/users/create");
         servHandler.addServletWithMapping(GreetServlet.class, "/greet");
         servHandler.addServletWithMapping(ElectionServlet.class, "/election");
-        servHandler.addServletWithMapping(TerminateServlet.class, "/terminate");
         server.setHandler(servHandler);
 
         Thread gossipThread = new Thread(new Gossip());

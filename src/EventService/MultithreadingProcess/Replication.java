@@ -8,16 +8,30 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Replication class for primary to replicate data to secondaries.
+ */
 public class Replication extends BaseServlet {
     private final String uri;
     private final JsonObject requestBody;
 
+    /**
+     * Constructor of Replication.
+     * Add the timestamp into the request body.
+     *
+     * @param uri
+     * @param requestBody
+     * @param timestamp
+     */
     public Replication(String uri, JsonObject requestBody, int timestamp) {
         this.uri = uri;
         this.requestBody = requestBody;
         this.requestBody.addProperty("timestamp", timestamp);
     }
 
+    /**
+     * Start sending replicate to secondaries concurrently and wait until all replications to finish.
+     */
     public void startReplicate() {
         List<String> services = EventServiceDriver.eventServiceList.getList();
         List<Thread> currentTasks = new ArrayList<>();
@@ -50,13 +64,25 @@ public class Replication extends BaseServlet {
         }
     }
 
+    /**
+     * Nested SendReplicate class implements Runnable.
+     * Send the replicate concurrently.
+     * If the service is no longer there, remove it from the list.
+     */
     private class SendReplicate implements Runnable {
         private final String url;
 
+        /**
+         * Constructor of SendReplicate.
+         * @param url
+         */
         private SendReplicate(String url) {
             this.url = url;
         }
 
+        /**
+         * run method to start the operation.
+         */
         @Override
         public void run() {
             try {

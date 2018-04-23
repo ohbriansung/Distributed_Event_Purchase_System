@@ -9,6 +9,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Thread-safe ServiceList to maintain membership
+ *
+ * @param <T>
+ */
 public class ServiceList<T> {
     private final ReentrantReadWriteLock lock;
     private final Set<T> list;
@@ -26,6 +31,12 @@ public class ServiceList<T> {
         this.service = service;
     }
 
+    /**
+     * Check if the list contains with the service.
+     *
+     * @param service
+     * @return boolean
+     */
     public boolean contains(T service) {
         boolean result;
 
@@ -36,6 +47,12 @@ public class ServiceList<T> {
         return result;
     }
 
+    /**
+     * Add the service into the list and return result.
+     *
+     * @param service
+     * @return boolean
+     */
     public boolean addService(T service) {
         boolean result;
 
@@ -46,6 +63,12 @@ public class ServiceList<T> {
         return result;
     }
 
+    /**
+     * Remove the service from the list and return result.
+     *
+     * @param service
+     * @return boolean
+     */
     public boolean removeService(T service) {
         boolean result;
 
@@ -56,6 +79,11 @@ public class ServiceList<T> {
         return result;
     }
 
+    /**
+     * Return the snapshot of current service list.
+     *
+     * @return List
+     */
     public List<T> getList() {
         List<T> list = new ArrayList<>();
 
@@ -66,12 +94,22 @@ public class ServiceList<T> {
         return list;
     }
 
+    /**
+     * Primary Setter.
+     *
+     * @param primary
+     */
     public void setPrimary(T primary) {
         this.lock.writeLock().lock();
         this.primary = primary;
         this.lock.writeLock().unlock();
     }
 
+    /**
+     * Return the address of current primary service.
+     *
+     * @return T
+     */
     public T getPrimary() {
         T primary;
 
@@ -82,6 +120,11 @@ public class ServiceList<T> {
         return primary;
     }
 
+    /**
+     * Return the details of service in the list.
+     *
+     * @return JsonArray
+     */
     public JsonArray getData() {
         JsonArray array = new JsonArray();
 

@@ -33,6 +33,7 @@ public class CreateServlet extends BaseServlet {
             String requestBody = parseRequest(request);
             JsonObject body = (JsonObject) parseJson(requestBody);
 
+            // for secondary to check the order of the timestamp
             timestampBlock(body);
 
             String uuid = body.get("uuid").getAsString();
@@ -52,6 +53,7 @@ public class CreateServlet extends BaseServlet {
             int eventId = EventServiceDriver.eventList.add(uuid, eventName, createUserId, numtickets, timestamp);
 
             if (eventId > -1) {
+                // for primary to start the replication
                 primaryReplication(request.getRequestURI(), body, timestamp.get(0));
 
                 // response after completing replication

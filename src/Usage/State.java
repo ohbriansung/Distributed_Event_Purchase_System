@@ -1,5 +1,8 @@
 package Usage;
 
+/**
+ * State enum to specify the states of event services.
+ */
 public enum State {
 
     PRIMARY("primary"),

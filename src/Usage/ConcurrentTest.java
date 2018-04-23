@@ -8,8 +8,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * ConcurrentTest class for concurrent writes.
+ */
 public class ConcurrentTest {
 
+    /**
+     * main method to start the test.
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
 
         if (args.length < 3) {
@@ -42,10 +51,19 @@ public class ConcurrentTest {
         System.out.println("[Test] Concurrency test finished");
     }
 
+    /**
+     * Request class implement Runnable for supporting currency.
+     */
     private static class Request implements Runnable {
         private JsonObject body;
         private HttpURLConnection connection;
 
+        /**
+         * Overlapped constructor of Request for create.
+         *
+         * @param address
+         * @throws Exception
+         */
         Request(String address) throws Exception {
             this.body = new JsonObject();
             this.body.addProperty("userid", 2294);
@@ -59,6 +77,13 @@ public class ConcurrentTest {
             this.connection.setDoOutput(true);
         }
 
+        /**
+         * Overlapped constructor of Request for purchase.
+         *
+         * @param address
+         * @param i
+         * @throws Exception
+         */
         Request(String address, int i) throws Exception {
             this.body = new JsonObject();
             this.body.addProperty("tickets", 2);
@@ -70,6 +95,9 @@ public class ConcurrentTest {
             this.connection.setDoOutput(true);
         }
 
+        /**
+         * run method to start the operation.
+         */
         @Override
         public void run() {
             try {

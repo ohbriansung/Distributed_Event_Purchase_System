@@ -123,11 +123,21 @@ public abstract class BaseServlet extends HttpServlet {
         return parseJson(sb.toString());
     }
 
+    /**
+     * Return the current host and port.
+     *
+     * @return String
+     */
     protected String getCurrentAddress() {
         return EventServiceDriver.properties.get("host") +
                 ":" + EventServiceDriver.properties.get("port");
     }
 
+    /**
+     * Return the snapshot of current service lists.
+     *
+     * @return JsonArray
+     */
     JsonArray getServiceList() {
         JsonArray array = EventServiceDriver.frontendServiceList.getData();
         array.addAll(EventServiceDriver.eventServiceList.getData());
@@ -157,6 +167,13 @@ public abstract class BaseServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Start the replication.
+     *
+     * @param uri
+     * @param body
+     * @param timestamp
+     */
     void primaryReplication(String uri, JsonObject body, int timestamp) {
         if (EventServiceDriver.state != State.PRIMARY) {
             return;
@@ -166,6 +183,11 @@ public abstract class BaseServlet extends HttpServlet {
         rpc.startReplicate();
     }
 
+    /**
+     * Generate random time.
+     *
+     * @return int
+     */
     protected int randomTime() {
         Random r = new Random();
         return (r.nextInt(10) + 20) * 100; // 2 to 3 seconds per heartbeat

@@ -6,8 +6,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.HttpURLConnection;
 
+/**
+ * ElectionServlet to handle election request.
+ */
 public class ElectionServlet extends BaseServlet {
 
+    /**
+     * doPost method to handle the announcement of new primary.
+     *
+     * @param request
+     * @param response
+     */
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {

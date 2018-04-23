@@ -111,6 +111,11 @@ public class EventList {
         return array;
     }
 
+    /**
+     * Return the snapshot of current committed log.
+     *
+     * @return JsonArray
+     */
     public JsonArray getCommittedLog() {
         JsonArray array = new JsonArray();
 
@@ -125,6 +130,13 @@ public class EventList {
         return array;
     }
 
+    /**
+     * Restore the backup data form the primary and return the result.
+     *
+     * @param data
+     * @param lock
+     * @return boolean
+     */
     public boolean restoreData(JsonObject data, boolean lock) {
         boolean result;
 
@@ -151,6 +163,12 @@ public class EventList {
         return result;
     }
 
+    /**
+     * Overwrite the current event list data with the new one.
+     *
+     * @param data
+     * @throws Exception
+     */
     private void restoreEvents(JsonObject data) throws Exception {
         this.events.clear();
         JsonArray array = (JsonArray) data.get("eventlist");
@@ -171,6 +189,12 @@ public class EventList {
         }
     }
 
+    /**
+     * Overwrite the current log data with new one.
+     *
+     * @param data
+     * @throws Exception
+     */
     private void restoreLog(JsonObject data) throws Exception {
         this.committed.clear();
         JsonArray array = (JsonArray) data.get("committedlog");
@@ -183,6 +207,12 @@ public class EventList {
         }
     }
 
+    /**
+     * Check duplicate uuid committed log.
+     *
+     * @param uuid
+     * @return boolean
+     */
     boolean containsLog(String uuid) {
         boolean result;
 
@@ -193,6 +223,12 @@ public class EventList {
         return result;
     }
 
+    /**
+     * Return the timestamp and the event data.
+     *
+     * @param uuid
+     * @return int[]
+     */
     int[] getLogDetails(String uuid) {
         int[] result;
 
@@ -203,12 +239,24 @@ public class EventList {
         return result;
     }
 
+    /**
+     * Rollback a commit if the request to user service fails.
+     *
+     * @param uuid
+     */
     void rollbackCommit(String uuid) {
         this.lock.writeLock().lock();
         this.committed.remove(uuid);
         this.lock.writeLock().unlock();
     }
 
+    /**
+     * Commit the uuid, timestamp, and event data into log.
+     *
+     * @param uuid
+     * @param timestamp
+     * @param eventId
+     */
     void commit(String uuid, int timestamp, int eventId) {
         int[] logDeatils = new int[] {timestamp, eventId};
 
@@ -217,6 +265,13 @@ public class EventList {
         this.lock.writeLock().unlock();
     }
 
+    /**
+     * For secondaries to check the correctness of existing uuid and timestamp.
+     * If doesn't match, send a full backup request to the primary.
+     *
+     * @param uuid
+     * @param timestamp
+     */
     private void checkMatch(String uuid, List<Integer> timestamp) {
         /*
         If the request has already been committed, check if the timestamp matches.
@@ -235,6 +290,9 @@ public class EventList {
         }
     }
 
+    /**
+     * Lock read from outside for backup usage.
+     */
     public void lockForBackup() {
         this.lock.readLock().lock();
 
@@ -243,6 +301,9 @@ public class EventList {
         }
     }
 
+    /**
+     * Unlock read from outside.
+     */
     public void unlockFromBackup() {
         for (Event event : events.values()) {
             event.unlockFromBackup();

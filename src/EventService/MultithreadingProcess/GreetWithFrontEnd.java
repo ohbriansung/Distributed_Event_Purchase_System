@@ -6,8 +6,14 @@ import EventService.Servlet.BaseServlet;
 import java.net.HttpURLConnection;
 import java.util.List;
 
+/**
+ * GreetWithFrontEnd class to keep greeting with frontend services.
+ */
 public class GreetWithFrontEnd extends BaseServlet implements Runnable {
 
+    /**
+     * run method to start the operation.
+     */
     @Override
     public void run() {
         while (EventServiceDriver.alive) {
@@ -26,6 +32,11 @@ public class GreetWithFrontEnd extends BaseServlet implements Runnable {
         }
     }
 
+    /**
+     * Send the greet request. If the service is no longer there, remove it from the list.
+     *
+     * @param url
+     */
     private void greetAndUpdate(String url) {
         try {
             HttpURLConnection connection = doGetRequest(url + "/greet");

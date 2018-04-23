@@ -49,6 +49,9 @@ public class EventServiceDriver {
         }
     }
 
+    /**
+     * Initialize the data structures.
+     */
     private static void initDataStructures() {
         EventServiceDriver.eventList = new EventList();
         EventServiceDriver.properties = new HashMap<>();
@@ -57,6 +60,12 @@ public class EventServiceDriver {
         EventServiceDriver.lamportTimestamps = new ConcurrentInteger();
     }
 
+    /**
+     * Parse arguments and store the data.
+     *
+     * @param args
+     * @throws Exception
+     */
     private static void initProperties(String[] args) throws Exception {
         boolean port = false;
         boolean primaryEvent = false;
@@ -97,6 +106,11 @@ public class EventServiceDriver {
         }
     }
 
+    /**
+     * Start the server to listen and greet with event and frontend services.
+     *
+     * @throws Exception
+     */
     private static void startServer() throws Exception {
         int port = Integer.parseInt(EventServiceDriver.properties.get("port"));
         Server server = new Server(port);
@@ -109,7 +123,6 @@ public class EventServiceDriver {
         servHandler.addServletWithMapping(GreetServlet.class, "/greet/*");
         servHandler.addServletWithMapping(ElectionServlet.class, "/election");
         servHandler.addServletWithMapping(BackupServlet.class, "/backup");
-        servHandler.addServletWithMapping(TerminateServlet.class, "/terminate");
         server.setHandler(servHandler);
 
         Thread gossipThread = new Thread(new Gossip());

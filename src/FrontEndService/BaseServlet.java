@@ -119,6 +119,12 @@ public abstract class BaseServlet extends HttpServlet {
         return parseJson(sb.toString());
     }
 
+    /**
+     * Block the current request and retry it in 3 second or until waked.
+     *
+     * @param uuid
+     * @param failure
+     */
     void blockAndRetry(String uuid, int failure) {
         if (failure < 3) {
             try {

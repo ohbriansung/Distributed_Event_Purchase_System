@@ -10,8 +10,14 @@ import com.google.gson.JsonObject;
 import java.net.HttpURLConnection;
 import java.util.*;
 
+/**
+ * Gossip class to gossip with other event services.
+ */
 public class Gossip extends BaseServlet implements Runnable {
 
+    /**
+     * run method to start the operation.
+     */
     @Override
     public void run() {
         while (EventServiceDriver.alive) {
@@ -48,6 +54,13 @@ public class Gossip extends BaseServlet implements Runnable {
         }
     }
 
+    /**
+     * Remove from the list if the service is no longer there.
+     * If it is the primary, start the bully election.
+     *
+     * @param toRemove
+     * @throws InterruptedException
+     */
     private void remove(List<String> toRemove) throws InterruptedException {
         for (String service : toRemove) {
             System.out.println("[Gossip] Remove event service " + service + " from the list");
@@ -64,15 +77,29 @@ public class Gossip extends BaseServlet implements Runnable {
         }
     }
 
+    /**
+     * Nested GreetAndUpdate class implements Runnable.
+     * Send the gossip request to other event services concurrently.
+     * Update the membership with the data from the response body.
+     */
     private class GreetAndUpdate implements Runnable {
         private final String url;
         private final Vector<String> toRemove;
 
+        /**
+         * Constructor of GreetAndUpdate.
+         *
+         * @param url
+         * @param toRemove
+         */
         private GreetAndUpdate(String url, Vector<String> toRemove) {
             this.url = url;
             this.toRemove = toRemove;
         }
 
+        /**
+         * run method to start the operation.
+         */
         @Override
         public void run() {
             try {
@@ -93,6 +120,11 @@ public class Gossip extends BaseServlet implements Runnable {
             }
         }
 
+        /**
+         * Update current service list with the data from other event services.
+         *
+         * @param newList
+         */
         private void updateServiceList(JsonArray newList) {
             for (int i = 0; i < newList.size(); i++) {
                 try {

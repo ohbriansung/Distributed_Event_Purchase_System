@@ -11,8 +11,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 
+/**
+ * GreetServlet to handle the greet request.
+ */
 public class GreetServlet extends BaseServlet {
 
+    /**
+     * Add the sender to the service list.
+     * Reply with the snapshot of current service list to maintain the membership.
+     *
+     * @param request
+     * @param response
+     */
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
         response.setContentType(EventServiceDriver.APP_TYPE);
@@ -31,6 +41,12 @@ public class GreetServlet extends BaseServlet {
         }
     }
 
+    /**
+     * Parse the request body and add the address of sender into the list based on uri methods.
+     *
+     * @param request
+     * @throws Exception
+     */
     private void addSender(HttpServletRequest request) throws Exception {
         String uri = request.getRequestURI();
         String requestBody = parseRequest(request);
@@ -44,13 +60,16 @@ public class GreetServlet extends BaseServlet {
             case "/greet/frontend":
                 addToFrontEndServiceList(address);
                 break;
-            case "/greet/loadbalancing":
-                break;
             default:
                 throw new Exception("[Servlet] Bad request: " + uri);
         }
     }
 
+    /**
+     * Add address into event service list.
+     *
+     * @param address
+     */
     private void addToEventServiceList(String address) {
         if (!EventServiceDriver.eventServiceList.contains(address)) {
             System.out.println("[Servlet] Added " + address + " into event service list");
@@ -63,6 +82,11 @@ public class GreetServlet extends BaseServlet {
         }
     }
 
+    /**
+     * Add address into frontend service list.
+     *
+     * @param address
+     */
     private void addToFrontEndServiceList(String address) {
         if (!EventServiceDriver.frontendServiceList.contains(address)) {
             System.out.println("[Servlet] Added " + address + " into frontend service list");

@@ -10,8 +10,17 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 
+/**
+ * BackupServlet to handle the backup requests.
+ */
 public class BackupServlet extends BaseServlet {
 
+    /**
+     * Reply the current data snapshot to secondaries.
+     *
+     * @param request
+     * @param response
+     */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("[Servlet] GET request /backup");
@@ -32,6 +41,12 @@ public class BackupServlet extends BaseServlet {
         }
     }
 
+    /**
+     * Parse the request body and store the data into the current service.
+     *
+     * @param request
+     * @param response
+     */
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("[Servlet] POST request /backup");

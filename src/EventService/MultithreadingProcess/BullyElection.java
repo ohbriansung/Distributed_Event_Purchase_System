@@ -9,13 +9,22 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * BullyElection class to send the election request or the announcement.
+ */
 public class BullyElection extends BaseServlet implements Runnable {
     private volatile boolean beenReplied;
 
+    /**
+     * Constructor of BullyElection.
+     */
     public BullyElection() {
         this.beenReplied = false;
     }
 
+    /**
+     * run method to start the operation.
+     */
     @Override
     public void run() {
         List<String> services = EventServiceDriver.eventServiceList.getList();
@@ -61,6 +70,9 @@ public class BullyElection extends BaseServlet implements Runnable {
         }
     }
 
+    /**
+     * Change into new primary and announce to all services.
+     */
     private void announceNewPrimary() {
         // change state
         System.out.println("[State] Change into primary state");
@@ -72,6 +84,11 @@ public class BullyElection extends BaseServlet implements Runnable {
         startAnnouncing("FrontEnd");
     }
 
+    /**
+     * Start new thread to send the announcement to other services.
+     *
+     * @param type
+     */
     private void startAnnouncing(String type) {
         List<String> services = (type.equals("Event")) ? EventServiceDriver.eventServiceList.getList() :
                 EventServiceDriver.frontendServiceList.getList();
@@ -85,13 +102,24 @@ public class BullyElection extends BaseServlet implements Runnable {
         }
     }
 
+    /**
+     * Nested Election class to send election request to other event services concurrently.
+     */
     private class Election implements Runnable {
         private final String url;
 
+        /**
+         * Constructor of Election.
+         *
+         * @param url
+         */
         private Election(String url) {
             this.url = url;
         }
 
+        /**
+         * run method to start the operation.
+         */
         @Override
         public void run() {
             try {
@@ -112,15 +140,26 @@ public class BullyElection extends BaseServlet implements Runnable {
         }
     }
 
+    /**
+     * Nested Announce class to send announcement to other services concurrently.
+     */
     private class Announce implements Runnable {
         private final String url;
         private final String type;
 
+        /**
+         * Constructor of Announce.
+         *
+         * @param url
+         */
         private Announce(String url, String type) {
             this.url = url;
             this.type = type;
         }
 
+        /**
+         * run method to start the operation.
+         */
         @Override
         public void run() {
             try {
@@ -145,6 +184,11 @@ public class BullyElection extends BaseServlet implements Runnable {
         }
     }
 
+    /**
+     * Print the remove log.
+     *
+     * @param url
+     */
     private void printRemove(String url) {
         System.out.println("[Election] Remove " + url + " from the list");
     }
