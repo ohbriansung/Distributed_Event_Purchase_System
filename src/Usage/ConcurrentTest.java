@@ -12,17 +12,23 @@ public class ConcurrentTest {
 
     public static void main(String[] args) throws Exception {
 
-        if (args.length < 2) {
-            System.out.println("Usage: java -cp project4.jar Usage.ConcurrentTest <address> <times_of_test>");
+        if (args.length < 3) {
+            System.out.println("Usage: java -cp project4.jar Usage.ConcurrentTest <test_number 0: create, 1:purchase> <address> <times_of_test>");
             return;
         }
 
-        String address = args[0];
-        int times = Integer.parseInt(args[1]);
+        int testNo = Integer.parseInt(args[0]);
+        String address = args[1];
+        int times = Integer.parseInt(args[2]);
         List<Thread> list = new ArrayList<>();
 
         for (int i = 0; i < times; i++) {
-            list.add(new Thread(new ConcurrentTest.Request(address)));
+            if (testNo == 0) {
+                list.add(new Thread(new ConcurrentTest.Request(address)));
+            }
+            else if (testNo == 1) {
+                list.add(new Thread(new ConcurrentTest.Request(address, testNo)));
+            }
         }
 
         for (Thread thread : list) {
@@ -47,6 +53,17 @@ public class ConcurrentTest {
             this.body.addProperty("numtickets", 10);
 
             URL url = new URL("http://" + address + "/events/create");
+            this.connection = (HttpURLConnection) url.openConnection();
+            this.connection.setRequestMethod("POST");
+            this.connection.setRequestProperty("Content-Type", "application/json");
+            this.connection.setDoOutput(true);
+        }
+
+        Request(String address, int i) throws Exception {
+            this.body = new JsonObject();
+            this.body.addProperty("tickets", 2);
+
+            URL url = new URL("http://" + address + "/events/" + i + "/purchase/2294");
             this.connection = (HttpURLConnection) url.openConnection();
             this.connection.setRequestMethod("POST");
             this.connection.setRequestProperty("Content-Type", "application/json");

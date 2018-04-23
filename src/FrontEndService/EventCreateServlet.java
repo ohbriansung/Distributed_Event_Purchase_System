@@ -48,10 +48,13 @@ public class EventCreateServlet extends BaseServlet {
 
                             response.setStatus(HttpURLConnection.HTTP_OK);
                             pw.println(responseBody.toString());
+                            System.out.println("[Servlet] request with uuid: " + uuid + " has been completed");
+                        }
+                        else {
+                            System.out.println("[Servlet] request with uuid: " + uuid + " failed");
                         }
                     }
 
-                    System.out.println("[Servlet] request with uuid: " + uuid + " has been completed");
                     break; // exit loop after completing the request without broken connection
                 }
                 catch (IOException ignored) {

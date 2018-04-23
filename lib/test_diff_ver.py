@@ -45,7 +45,6 @@ if __name__ == "__main__":
     suite.addTest(TestServer("test_different_version_of_secondary", address))
     suite.addTest(TestServer("test_event_list", address))
 
-    
     print("------------------------------------------------------")
     unittest.TextTestRunner().run(suite)
 
