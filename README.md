@@ -4,15 +4,13 @@
 
 This is an event create/purchase RESTful API Service. Client can create user, create event, purchase tickets, and transfer tickets. Focus on the replication features of the event service which is a replicated, fault tolerant service.
 
+The design of my service and the demonstration of the testing framework are recorded here: [Youtube](https://youtu.be/fq_06zrdYSk?t=17m53s)
+
 ## Overview
 
 The architecture of the service looks like this:
 
 ![Project4 Architecture](https://i.imgur.com/g14jmLB.jpg)
-
-## Design and Demo
-
-The design of my service and the demonstration of the testing framework are recorded here: [Youtube](https://youtu.be/fq_06zrdYSk?t=17m53s)
 
 ## Features
 
