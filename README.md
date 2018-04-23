@@ -1,22 +1,22 @@
 # Strong Consistency Event Purchase RESTful API Service
 
-## Introduction
+### Introduction
 
 This is a event create/purchase RESTful API Service, implemented a replicated, fault tolerant version of the service with strong consistency model. Focus on the replication of the event service.
 
 Client can create user, create event, purchase tickets, and transfer tickets.
 
-## Overview
+### Overview
 
 The architecture of the service looks like this:
 
 ![Project4 Architecture](https://i.imgur.com/g14jmLB.jpg)
 
-## Design and Demo
+### Design and Demo
 
 The design of my service and the demonstration of the testing framework are recorded here: [Youtube](https://youtu.be/fq_06zrdYSk?t=17m53s)
 
-## Features
+### Features
 
 #### Fault Tolerance
 
@@ -46,9 +46,9 @@ A synchronized data structure to maintain the logs of committed request. It cont
 
 When a front end service receives a write request, it will assign the request with an uuid and pass it to the primary event service. The primary event service will start the write operation, and right after it finished, it will assign the request with a Lamport Timestamp, commit to log, and pass it to the secondary event service. If the primary fails during replication, the front end will hold the request and retry it when a new primary comes up. If a new primary has already committed the write with the same uuid, it will ignore it and pass it with the timestamp it committed to the secondary event service. If a secondary receives a write request with the uuid it already committed, it will match with its timestamp. If the uuid and the timestamp don't match, it will request a full copy from the primary to overwrite the data. Full backup from primary will only happen when new secondary comes up or the above situation.
 
-## API
+### API
 
-### Front End Service
+#### Front End Service
 
 <details>
 <summary>GET /events</summary>
@@ -246,7 +246,7 @@ Responses:
 </details>
 
 
-### Event Service
+#### Event Service
 
 <details>
 <summary>POST /create</summary>
@@ -450,7 +450,7 @@ Responses:
 </details>
 
 
-### User Service
+#### User Service
 
 <details>
 <summary>POST /create</summary>
@@ -548,7 +548,7 @@ Responses:
 </details>
 
 
-## Program and testing framework configuration
+### Program and testing framework configuration
 
 <details>
 <summary>Start Event Service (Primary)</summary>
@@ -616,18 +616,18 @@ $ java -cp project4.jar Usage.ConcurrentTest <0_for_create_1_for_purchase> <addr
 </details>
 
 
-## References
+### References
 * [University of San Francisco](https://www.usfca.edu/)
 * [Gson](https://mvnrepository.com/artifact/com.google.code.gson/gson/2.8.2)
 * [Jetty-all](https://mvnrepository.com/artifact/org.eclipse.jetty.aggregate/jetty-all/9.4.9.v20180320)
 * [Maven](https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html)
 * [Imgur](https://imgur.com/)
 
-## Acknowledgment
+### Acknowledgment
 
 This is a course project, not using for any commercial purpose.
 
-## Author and contributors
+### Author and contributors
 
 * **Brian Sung** - *Graduate student in department of Computer Science at University of San Francisco* - [LinkedIn](https://www.linkedin.com/in/brianisadog/)
 * **Dr. Rollins** - *Professor in department of Computer Science at University of San Francisco* - [page](http://srollins.cs.usfca.edu/)
